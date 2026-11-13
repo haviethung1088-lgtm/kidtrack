@@ -1,0 +1,13 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /spaces/{sid} {
+      allow read, update: if request.auth != null && request.auth.token.email in resource.data.members;
+      allow create: if request.auth != null && request.auth.token.email in request.resource.data.members;
+      match /{col}/{doc} {
+        allow read, write: if request.auth != null
+          && request.auth.token.email in get(/databases/$(database)/documents/spaces/$(sid)).data.members;
+      }
+    }
+  }
+}
