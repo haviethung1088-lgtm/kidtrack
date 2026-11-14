@@ -75,6 +75,19 @@ body[data-role=viewer] [data-a=mark]{pointer-events:none}body[data-role=viewer] 
 .md .sl{display:flex;gap:6px;align-items:center;margin-top:8px}.md .sl select{flex:1.3;width:auto;margin:0}.md .sl input{flex:1;width:auto;min-width:0;margin:0}.md .sl span{color:var(--mut);font-size:13px}.md .sl .x{padding:6px 11px;font-size:18px;line-height:1}
 header .sub{white-space:normal;overflow:visible;text-overflow:clip;max-height:28vh;overflow-y:auto}
 header .td{font-weight:500;margin-top:2px}.ls{padding:1px 0}.ls b{font-variant-numeric:tabular-nums;font-weight:500;color:var(--ink)}
+
+:root{--hp:linear-gradient(135deg,#1B2A33,#2E4C5C)}
+html[data-skin=night]{--hp:linear-gradient(135deg,#25365A,#36528F)}
+html[data-skin=sunset]{--hp:linear-gradient(135deg,#4A2C20,#8A4B30)}
+html[data-skin=forest]{--hp:linear-gradient(135deg,#1F3A2A,#336B49)}
+#hb{background:var(--hp);color:#fff;border-radius:16px;padding:12px 14px;align-items:stretch;justify-content:space-between;gap:12px;box-shadow:0 2px 8px #0003}
+#hb .tl{min-width:0}#hb .tr{display:flex;flex-direction:column;align-items:flex-end;text-align:right;gap:2px;flex:0 0 auto}
+#tm{display:block;font-size:30px;line-height:1.1;font-weight:700;letter-spacing:.5px;font-variant-numeric:tabular-nums}
+#dt{margin:4px 0 0;font-size:13px;color:#ffffffd9;line-height:1.35}
+#gear,#wr{border:0;border-radius:99px;background:#ffffff26;color:#fff;width:28px;height:28px;padding:0;display:inline-flex;align-items:center;justify-content:center;font-size:15px;line-height:1}
+.wl{display:flex;align-items:center;gap:6px;font-size:14px;font-weight:500;white-space:nowrap;margin-top:2px}#wr{width:24px;height:24px;font-size:14px}
+#wu{font-size:11px;color:#ffffff8c;margin-top:1px}
+@keyframes sp{to{transform:rotate(360deg)}}.spin{animation:sp .8s linear infinite}
 </style></head><body><div id="app"></div>
 <script type="module">
 /* ==== DÁN CẤU HÌNH FIREBASE CỦA ANH VÀO ĐÂY (Project settings > Your apps > Web) ==== */
@@ -85,7 +98,7 @@ import {getAuth,GoogleAuthProvider,signInWithPopup,signOut,onAuthStateChanged,se
 import {getFirestore,collection,doc,addDoc,setDoc,updateDoc,deleteDoc,onSnapshot,query,where,getDocs,serverTimestamp} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 const app=initializeApp(FB),auth=getAuth(app),db=getFirestore(app);
 setPersistence(auth,indexedDBLocalPersistence).catch(()=>setPersistence(auth,browserLocalPersistence)).catch(()=>{});try{navigator.storage?.persist?.()}catch(e){}
-const APP_VER='1.2.2',APP_BUILD='14/11/2026 15:38';
+const APP_VER='1.3.0',APP_BUILD='14/11/2026 15:45';
 const $=s=>document.querySelector(s),esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const fm=n=>{const d=String(n??'').replace(/\D/g,'');return d?(+d).toLocaleString('vi-VN'):''},vnd=n=>Math.round(n||0).toLocaleString('vi-VN')+' đ',today=()=>new Date().toLocaleDateString('sv'),fmtD=s=>s?s.split('-').reverse().join('/'):'';
 const DOW=['CN','T2','T3','T4','T5','T6','T7'],COLS=['students','courses','sessions','fees','payments','grades'];
@@ -142,17 +155,29 @@ if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWor
 /* giờ, ngày, lời chào, thời tiết */
 const DN=['Chủ nhật','Thứ 2','Thứ 3','Thứ 4','Thứ 5','Thứ 6','Thứ 7'],WXI=c=>c===0?'☀️':c<3?'🌤️':c===3?'☁️':c<50?'🌫️':c<70?'🌧️':c>=95?'⛈️':c>=80?'🌦️':'☁️';
 let WX=null;try{WX=JSON.parse(localStorage.getItem('kt_wx'))}catch(e){}
-const paintWx=()=>{const e=$('#wx');if(e)e.textContent=WX?`${WXI(WX.c)} ${WX.T}°C${WX.r!=null?' · mưa '+WX.r+'%':''}`:''};
-async function getWx(){if(WX&&Date.now()-WX.t<6e5)return;let j=null;const u=PURL(),q='current=temperature_2m,weather_code&daily=precipitation_probability_max&timezone=auto&forecast_days=1';
+const paintWx=()=>{const e=$('#wx'),u=$('#wu');if(e)e.textContent=WX?`${WXI(WX.c)} ${WX.T}°C${WX.r!=null?' · mưa '+WX.r+'%':''}`:'';if(u)u.textContent=WX?'Cập nhật lúc '+new Date(WX.t).toLocaleTimeString('vi-VN',{hour:'2-digit',minute:'2-digit',hour12:false}):''};
+async function getWx(force){if(!force&&WX&&Date.now()-WX.t<6e5)return true;let j=null;const u=PURL(),q='current=temperature_2m,weather_code&daily=precipitation_probability_max&timezone=auto&forecast_days=1';
  try{if(u){const r=await fetch(u+'/weather?lat=21.32&lon=105.40&'+q);if(r.ok)j=await r.json()}}catch(e){}
  if(!j)try{const r=await fetch('https://api.open-meteo.com/v1/forecast?latitude=21.32&longitude=105.40&'+q);if(r.ok)j=await r.json()}catch(e){}
- if(!j||!j.current)return;WX={t:Date.now(),c:j.current.weather_code,T:Math.round(j.current.temperature_2m),r:j.daily?.precipitation_probability_max?.[0]};
- try{localStorage.setItem('kt_wx',JSON.stringify(WX))}catch(e){}paintWx()}
-function tick(){const n=new Date(),a=$('#tm'),b=$('#dt');if(a)a.textContent=n.toLocaleTimeString('vi-VN',{hour:'2-digit',minute:'2-digit'});if(b)b.textContent=DN[n.getDay()]+', '+n.toLocaleDateString('vi-VN',{day:'2-digit',month:'2-digit'})}
-setInterval(tick,15000);document.addEventListener('visibilitychange',()=>{if(!document.hidden){tick();getWx()}});
+ if(!j||!j.current)return false;WX={t:Date.now(),c:j.current.weather_code,T:Math.round(j.current.temperature_2m),r:j.daily?.precipitation_probability_max?.[0]};
+ try{localStorage.setItem('kt_wx',JSON.stringify(WX))}catch(e){}paintWx();return true}
+/* lịch âm Việt Nam (thuật toán Hồ Ngọc Đức, múi giờ +7) */
+const INT=Math.floor,jdOf=(d,m,y)=>{const a=INT((14-m)/12),yy=y+4800-a,mm=m+12*a-3;return d+INT((153*mm+2)/5)+365*yy+INT(yy/4)-INT(yy/100)+INT(yy/400)-32045};
+function newMoon(k){const T=k/1236.85,T2=T*T,T3=T2*T,r=Math.PI/180;let J=2415020.75933+29.53058868*k+0.0001178*T2-0.000000155*T3+0.00033*Math.sin((166.56+132.87*T-0.009173*T2)*r);const M=359.2242+29.10535608*k-0.0000333*T2-0.00000347*T3,P=306.0253+385.81691806*k+0.0107306*T2+0.00001236*T3,F=21.2964+390.67050646*k-0.0016528*T2-0.00000239*T3;let C=(0.1734-0.000393*T)*Math.sin(M*r)+0.0021*Math.sin(2*r*M)-0.4068*Math.sin(P*r)+0.0161*Math.sin(r*2*P)-0.0004*Math.sin(r*3*P)+0.0104*Math.sin(r*2*F)-0.0051*Math.sin(r*(M+P))-0.0074*Math.sin(r*(M-P))+0.0004*Math.sin(r*(2*F+M))-0.0004*Math.sin(r*(2*F-M))-0.0006*Math.sin(r*(2*F+P))+0.0010*Math.sin(r*(2*F-P))+0.0005*Math.sin(r*(2*P+M));const dt=T<-11?0.001+0.000839*T+0.0002261*T2-0.00000845*T3-0.000000081*T*T3:-0.000278+0.000265*T+0.000262*T2;return J+C-dt}
+const sunLong=(n,tz)=>{const T=(n-0.5-tz/24-2451545)/36525,T2=T*T,r=Math.PI/180,M=357.5291+35999.0503*T-0.0001559*T2-0.00000048*T*T2,L0=280.46645+36000.76983*T+0.0003032*T2;let D=(1.9146-0.004817*T-0.000014*T2)*Math.sin(r*M)+(0.019993-0.000101*T)*Math.sin(r*2*M)+0.00029*Math.sin(r*3*M),L=(L0+D)*r;L-=Math.PI*2*INT(L/(Math.PI*2));return INT(L/Math.PI*6)};
+const nmDay=(k,tz)=>INT(newMoon(k)+0.5+tz/24);
+function lm11(y,tz){const k=INT((jdOf(31,12,y)-2415021)/29.530588853);let nm=nmDay(k,tz);if(sunLong(nm,tz)>=9)nm=nmDay(k-1,tz);return nm}
+function leapOff(a11,tz){const k=INT((a11-2415021.076998695)/29.530588853+0.5);let last,i=1,arc=sunLong(nmDay(k+i,tz),tz);do{last=arc;i++;arc=sunLong(nmDay(k+i,tz),tz)}while(arc!==last&&i<14);return i-1}
+function toLunar(d,m,y,tz=7){const n=jdOf(d,m,y),k=INT((n-2415021.076998695)/29.530588853);let ms=nmDay(k+1,tz);if(ms>n)ms=nmDay(k,tz);let a=lm11(y,tz),b=a,ly;if(a>=ms){ly=y;a=lm11(y-1,tz)}else{ly=y+1;b=lm11(y+1,tz)}const ld=n-ms+1,df=INT((ms-a)/29);let leap=0,lmo=df+11;if(b-a>365){const lo=leapOff(a,tz);if(df>=lo){lmo=df+10;if(df===lo)leap=1}}if(lmo>12)lmo-=12;if(lmo>=11&&df<4)ly-=1;return [ld,lmo,ly,leap]}
+const CAN=['Giáp','Ất','Bính','Đinh','Mậu','Kỷ','Canh','Tân','Nhâm','Quý'],CHI=['Tý','Sửu','Dần','Mão','Thìn','Tỵ','Ngọ','Mùi','Thân','Dậu','Tuất','Hợi'];
+const lunarStr=d=>{const [l,m,y,p]=toLunar(d.getDate(),d.getMonth()+1,d.getFullYear());return `Âm lịch ${l}/${m}${p?' nhuận':''} ${CAN[(y+6)%10]} ${CHI[(y+8)%12]}`};
+let lunDay='',lunTxt='';
+function tick(){const n=new Date(),a=$('#tm'),b=$('#dt');if(a)a.textContent=n.toLocaleTimeString('vi-VN',{hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false});
+ if(b){const k=n.toLocaleDateString('sv');if(k!==lunDay){lunDay=k;try{lunTxt=lunarStr(n)}catch(e){lunTxt=''}}b.textContent=DN[n.getDay()]+', '+n.toLocaleDateString('vi-VN',{day:'2-digit',month:'2-digit',year:'numeric'})+(lunTxt?' ('+lunTxt+')':'')}}
+setInterval(tick,1000);document.addEventListener('visibilitychange',()=>{if(!document.hidden){tick();getWx()}});
 const greet=()=>{const h=new Date().getHours();return h>=4&&h<12?'Chào buổi sáng':h>=12&&h<18?'Chào buổi chiều':'Chào buổi tối'};
 function header(){const dw=new Date().getDay(),L=D.courses.flatMap(c=>{const s=D.students.find(x=>x.id===c.studentId);return s?sched(c).filter(x=>x.d===dw).map(x=>({t:x.t||'',s:s.name,c:c.name})):[]}).sort((a,b)=>(a.t||'99').localeCompare(b.t||'99')||a.s.localeCompare(b.s,'vi'));
- return `<header><div id="hb"><span><b id="tm"></b><span id="dt"></span></span><span class="wx" id="wx"></span><button id="gear" data-a="cfg" aria-label="Tùy chỉnh">⚙️</button></div><h1>${greet()}</h1><div class="sub">${isAdmin()?'':'<div>Chế độ xem</div>'}${L.length?'<div class="td">Lịch hôm nay</div>'+L.map(x=>`<div class="ls"><b>${esc(x.t||'Cả ngày')}</b> ${esc(x.s)} · ${esc(x.c)}</div>`).join(''):'<div>Hôm nay không có lịch học.</div>'}</div></header>`}
+ return `<header><div id="hb"><div class="tl"><b id="tm"></b><div id="dt"></div></div><div class="tr"><button id="gear" data-a="cfg" aria-label="Tùy chỉnh">⚙️</button><div class="wl"><span id="wx"></span><button id="wr" data-a="wref" aria-label="Làm mới thời tiết">↻</button></div><div id="wu"></div></div></div><h1>${greet()}</h1><div class="sub">${isAdmin()?'':'<div>Chế độ xem</div>'}${L.length?'<div class="td">Lịch hôm nay</div>'+L.map(x=>`<div class="ls"><b>${esc(x.t||'Cả ngày')}</b> ${esc(x.s)} · ${esc(x.c)}</div>`).join(''):'<div>Hôm nay không có lịch học.</div>'}</div></header>`}
 /* ẩn thanh tab khi cuộn xuống, chụm hai ngón để đổi cỡ chữ */
 let ly=0;function afterRender(){tick();paintWx();getWx();const m=$('main'),n=$('nav');if(m&&n){ly=m.scrollTop;m.onscroll=()=>{const y=m.scrollTop,d=y-ly;if(Math.abs(d)>8){n.classList.toggle('hide',d>0&&y>80);ly=y}}}queueSync()}
 let p0=0,p1=0;const pd=e=>Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);
@@ -176,7 +201,7 @@ const shareHtml=()=>isAdmin()?`<p class="k">Chia sẻ cho người khác (email 
 function cfg(){document.getElementById('cfg')?.remove();const on=pget().on&&pushSup()&&Notification.permission==='granted',m=document.createElement('div');m.className='md';m.id='cfg';
  m.innerHTML=`<div class="box"><h2>Tùy chỉnh</h2><p class="k">Giao diện</p><div class="seg">${Object.keys(SK).map(k=>`<button class="${skin()===k?'on':''}" data-a="skin" data-id="${k}">${SK[k][0]}</button>`).join('')}</div><p class="k">Cỡ chữ (chụm hai ngón để đổi nhanh)</p><div class="seg">${LV.map(v=>`<button class="${Z===v?'on':''}" data-a="zoom" data-id="${v}">${v}%</button>`).join('')}</div><p class="k">Nhắc trước giờ học thêm 1 tiếng</p>${pushSup()?`<div class="seg">${on?'<button data-a="ptest">Gửi thử</button><button data-a="poff">Tắt nhắc</button>':'<button class="on" data-a="pon">Bật nhắc trên máy này</button>'}</div><p class="k" id="pm">${on?'Đang bật. Mỗi máy cần bật riêng.':''}</p>`:'<p class="k">Máy này chưa hỗ trợ. Trên iPhone: thêm app vào Màn hình chính (iOS 16.4 trở lên).</p>'}${shareHtml()}<p class="k">KidTrack phiên bản ${APP_VER} · cập nhật lần cuối ${APP_BUILD} (giờ Việt Nam)</p><div class="bt"><button data-a="out2">Đăng xuất</button><button class="p" data-a="cfgx">Xong</button></div></div>`;
  document.body.append(m);m.onclick=e=>{if(e.target===m)m.remove()}}
-const EXTRA=id=>({share:()=>ask('Chia sẻ KidTrack',[{k:'e',l:'Email Google của người được chia sẻ',t:'email'}],{},async v=>{const e=(v.e||'').trim().toLowerCase();if(!e.includes('@'))throw Error('Email chưa đúng.');if(e===me())throw Error('Không đổi quyền của chính mình.');const a=adm().filter(x=>x!==e),w=vwr().filter(x=>x!==e);w.push(e);await saveShare(a,w);cfg()}),
+const EXTRA=id=>({wref:async()=>{$('#wr')?.classList.add('spin');const ok=await getWx(true);$('#wr')?.classList.remove('spin');if(!ok){const u=$('#wu');if(u)u.textContent='Không tải được, thử lại sau'}},share:()=>ask('Chia sẻ KidTrack',[{k:'e',l:'Email Google của người được chia sẻ',t:'email'}],{},async v=>{const e=(v.e||'').trim().toLowerCase();if(!e.includes('@'))throw Error('Email chưa đúng.');if(e===me())throw Error('Không đổi quyền của chính mình.');const a=adm().filter(x=>x!==e),w=vwr().filter(x=>x!==e);w.push(e);await saveShare(a,w);cfg()}),
  demote:()=>{if(!confirm('Chuyển '+id+' thành chỉ xem (không nhập liệu được)?'))return;return saveShare(adm().filter(x=>x!==id),[...vwr(),id]).then(cfg)},
  unshare:()=>{if(!confirm('Gỡ quyền truy cập của '+id+'?'))return;return saveShare(adm().filter(x=>x!==id),vwr().filter(x=>x!==id)).then(cfg)},cfg,cfgx:()=>document.getElementById('cfg')?.remove(),skin:()=>{setSkin(id);render();cfg()},zoom:()=>{setZ(+id);render();cfg()},
  out2:()=>{document.getElementById('cfg')?.remove();return signOut(auth)},
