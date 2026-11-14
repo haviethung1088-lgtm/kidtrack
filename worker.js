@@ -101,7 +101,7 @@ export default {
     const url = new URL(req.url), origin = req.headers.get("Origin"), allowed = allowedOrigin(req, env);
     const cors = allowed ? { "Access-Control-Allow-Origin":origin, "Access-Control-Allow-Headers":"content-type", "Access-Control-Allow-Methods":"GET,POST,OPTIONS", Vary:"Origin" } : {};
     if (req.method === "OPTIONS") return new Response(null, { status:allowed ? 204 : 403, headers:cors });
-    if (url.pathname === "/" || url.pathname === "/health") return response({ ok:true, name:"so-hoc-tap-push" }, 200, allowed ? origin : null);
+    if (url.pathname === "/" || url.pathname === "/health") return response({ ok:true, name:"kidtrack-push" }, 200, allowed ? origin : null);
     if (!allowed) return response({ error:"Nguồn truy cập không được phép." }, 403);
     if (!env.KV) return response({ error:"Worker chưa được gắn KV namespace (binding KV)." }, 500, origin);
     try {
