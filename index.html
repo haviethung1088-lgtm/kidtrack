@@ -5,7 +5,7 @@
 <title>KidTrack</title>
 <meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="KidTrack"><meta name="apple-mobile-web-app-status-bar-style" content="default">
 <link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="apple-touch-icon.png"><link rel="icon" type="image/png" href="icon-192.png">
-<script>try{document.documentElement.dataset.skin=localStorage.getItem("sh_skin")||"ocean"}catch(e){}</script><script src="push-config.js"></script>
+<script>try{document.documentElement.dataset.skin=localStorage.getItem("kt_skin")||"ocean"}catch(e){}</script><script src="push-config.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
@@ -67,6 +67,12 @@ header .sub{max-width:640px;margin:2px auto 0;color:var(--mut);font-size:13px;ov
 main{flex:1 1 auto;min-height:0;overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;touch-action:pan-y;zoom:var(--z,1);width:100%}
 nav{transition:transform .35s ease}nav.hide{transform:translateY(105%)}
 .dt{background:var(--card)}
+
+.am button.on{background:var(--c);color:#fff;border-color:var(--c)}.am button.no.on{background:#B3261E;border-color:#B3261E}
+.pill:not(.w):not(.o){background:var(--ln)}
+body[data-role=viewer] :is([data-a=add],[data-a=edit],[data-a=del],[data-a=pay],[data-a=extra]){display:none}
+body[data-role=viewer] [data-a=mark]{pointer-events:none}body[data-role=viewer] [data-a=mark]:not(.on){opacity:.35}
+.md .sl{display:flex;gap:6px;align-items:center;margin-top:8px}.md .sl select{flex:1.3;width:auto;margin:0}.md .sl input{flex:1;width:auto;min-width:0;margin:0}.md .sl span{color:var(--mut);font-size:13px}.md .sl .x{padding:6px 11px;font-size:18px;line-height:1}
 </style></head><body><div id="app"></div>
 <script type="module">
 /* ==== DÁN CẤU HÌNH FIREBASE CỦA ANH VÀO ĐÂY (Project settings > Your apps > Web) ==== */
@@ -78,28 +84,31 @@ const app=initializeApp(FB),auth=getAuth(app),db=getFirestore(app);
 const $=s=>document.querySelector(s),esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const fm=n=>{const d=String(n??'').replace(/\D/g,'');return d?(+d).toLocaleString('vi-VN'):''},vnd=n=>Math.round(n||0).toLocaleString('vi-VN')+' đ',today=()=>new Date().toLocaleDateString('sv'),fmtD=s=>s?s.split('-').reverse().join('/'):'';
 const DOW=['CN','T2','T3','T4','T5','T6','T7'],COLS=['students','courses','sessions','fees','payments','grades'];
-let user,sid,boot=true,tab='home',sel='all',att=today();const D={};COLS.forEach(c=>D[c]=[]);
+let user,sp={},sid,boot=true,tab='home',sel='all',att=today();const D={};COLS.forEach(c=>D[c]=[]);
 const ref=(c,id)=>doc(db,'spaces',sid,c,id),mine=c=>D[c].filter(x=>x.studentId===sel);
 const add=(c,o)=>addDoc(collection(db,'spaces',sid,c),{...o,createdAt:serverTimestamp(),by:user.email});
 function listen(){COLS.forEach(c=>onSnapshot(collection(db,'spaces',sid,c),s=>{D[c]=s.docs.map(d=>({id:d.id,...d.data()}));LOADED[c]=1;if(c==='students'&&sel!=='all'&&!D.students.some(x=>x.id===sel))sel='all';render()}))}
-onAuthStateChanged(auth,async u=>{user=u;boot=false;sid=null;if(u){const q=await getDocs(query(collection(db,'spaces'),where('members','array-contains',u.email.toLowerCase())));if(!q.empty){sid=q.docs[0].id;listen()}}render()});
+onAuthStateChanged(auth,async u=>{user=u;boot=false;sid=null;if(u){const q=await getDocs(query(collection(db,'spaces'),where('members','array-contains',u.email.toLowerCase())));if(!q.empty){sid=q.docs[0].id;sp=q.docs[0].data();listen()}}render()});
 
 /* ---- tính toán ---- */
 const sched=c=>(c.days||'').split(',').map(t=>t.trim().match(/^(CN|T([2-7]))\s*(.*)$/i)).filter(Boolean).map(m=>({d:/cn/i.test(m[1])?0:+m[2]-1,t:m[3]}));
-const nSess=c=>D.sessions.filter(s=>s.courseId===c.id&&s.status!=='absent').length;
+const nSess=c=>D.sessions.filter(s=>s.courseId===c.id&&inR(c,s.date)&&s.status!=='absent').length;
 const owed=c=>c.billing==='course'?+c.price||0:c.billing==='session'?((c.finalSessions!==''&&c.finalSessions!=null?+c.finalSessions:nSess(c))*(+c.rate||0)):0;
 const paid=id=>D.payments.filter(p=>p.refId===id).reduce((a,p)=>a+(+p.amount||0),0);
 const dues=()=>[...mine('fees').map(f=>({id:f.id,name:f.name,due:+f.amount||0,sub:f.due?'Hạn '+fmtD(f.due):f.note||'Khoản thu'})),
  ...mine('courses').filter(c=>c.billing&&c.billing!=='none').map(c=>({id:c.id,name:c.name,due:owed(c),sub:c.billing==='session'?`${c.finalSessions!==''&&c.finalSessions!=null?c.finalSessions+' buổi (cô chốt)':nSess(c)+' buổi (điểm danh)'} × ${vnd(c.rate)}`:'Trọn khóa'}))].map(i=>({...i,paid:paid(i.id)}));
 
 /* ---- form chung ---- */
+const slotRow=(d=1,a='',b='')=>`<div class="sl"><select>${[1,2,3,4,5,6,0].map(x=>`<option value="${x}"${+d===x?' selected':''}>${x?'Thứ '+(x+1):'Chủ nhật'}</option>`).join('')}</select><input type="time" value="${a}" aria-label="Giờ bắt đầu"><span>đến</span><input type="time" value="${b}" aria-label="Giờ kết thúc"><button type="button" class="x" data-rm aria-label="Xóa buổi">×</button></div>`;
+const slotsHtml=(f,vals)=>{const p=(h,m)=>h?h.padStart(2,'0')+':'+m:'',L=sched({days:vals[f.k]||''}).map(x=>{const m=(x.t||'').match(/(\d{1,2}):(\d{2})(?:\s*-\s*(\d{1,2}):(\d{2}))?/);return slotRow(x.d,m?p(m[1],m[2]):'',m&&m[3]?p(m[3],m[4]):'')});return `<p class="k" style="margin-bottom:0">${f.l}</p><div class="slw">${(L.length?L:[slotRow(1)]).join('')}</div><button type="button" class="add" data-addslot>+ Thêm buổi trong tuần</button>`};
+const slotStr=f=>[...f.querySelectorAll('.sl')].map(r=>{const x=+r.querySelector('select').value,[a,b]=[...r.querySelectorAll('input')].map(i=>i.value);return (x?'T'+(x+1):'CN')+(a?' '+a+(b?'-'+b:''):'')}).join(', ');
 function ask(title,fs,vals,cb){const m=document.createElement('div');m.className='md';
- m.innerHTML=`<form><h2>${esc(title)}</h2>${fs.map(f=>`<label>${f.l}${f.t==='select'?`<select name="${f.k}">${f.o.map(o=>`<option value="${esc(o[0])}" ${o[0]==(vals[f.k]??f.v??'')?'selected':''}>${esc(o[1])}</option>`).join('')}</select>`:f.t==='money'?`<input name="${f.k}" data-m="1" inputmode="numeric" autocomplete="off" value="${fm(vals[f.k]??f.v??'')}">`:f.t==='file'?`<input name="${f.k}" type="file" accept="image/*" multiple>`:`<input name="${f.k}" type="${f.t||'text'}" ${f.t==='number'?'inputmode="decimal" step="any"':''} value="${esc(vals[f.k]??f.v??'')}">`}</label>`).join('')}<div class="bt"><button type="button" class="g">Hủy</button><button class="p">Lưu</button></div></form>`;
- document.body.append(m);m.addEventListener('input',e=>{if(e.target.dataset.m)e.target.value=fm(e.target.value)});m.querySelector('.g').onclick=()=>m.remove();
- m.querySelector('form').onsubmit=async e=>{e.preventDefault();const fd=new FormData(e.target),v={};fs.forEach(f=>v[f.k]=f.t==='money'?(fm(fd.get(f.k))===''?'':+String(fd.get(f.k)).replace(/\D/g,'')):f.t==='file'?fd.getAll(f.k).filter(x=>x.size):f.t==='number'&&fd.get(f.k)!==''?+fd.get(f.k):fd.get(f.k));const b=e.target.querySelector('.p');b.disabled=true;try{await cb(v);m.remove()}catch(x){alert(x.message);b.disabled=false}}}
+ m.innerHTML=`<form><h2>${esc(title)}</h2>${fs.map(f=>f.t==='sched'?slotsHtml(f,vals):`<label>${f.l}${f.t==='select'?`<select name="${f.k}">${f.o.map(o=>`<option value="${esc(o[0])}" ${o[0]==(vals[f.k]??f.v??'')?'selected':''}>${esc(o[1])}</option>`).join('')}</select>`:f.t==='money'?`<input name="${f.k}" data-m="1" inputmode="numeric" autocomplete="off" value="${fm(vals[f.k]??f.v??'')}">`:f.t==='file'?`<input name="${f.k}" type="file" accept="image/*" multiple>`:`<input name="${f.k}" type="${f.t||'text'}" ${f.t==='number'?'inputmode="decimal" step="any"':''} value="${esc(vals[f.k]??f.v??'')}">`}</label>`).join('')}<div class="bt"><button type="button" class="g">Hủy</button><button class="p">Lưu</button></div></form>`;
+ document.body.append(m);m.addEventListener('input',e=>{if(e.target.dataset.m)e.target.value=fm(e.target.value)});m.addEventListener('click',e=>{const t=e.target;if(t.dataset.addslot!=null){const w=t.previousElementSibling,l=w.lastElementChild;if(!l)return w.insertAdjacentHTML('beforeend',slotRow(1));const d=+l.querySelector('select').value,[a,b]=[...l.querySelectorAll('input')].map(i=>i.value);w.insertAdjacentHTML('beforeend',slotRow(d===6?0:d===0?1:d+1,a,b))}else if(t.dataset.rm!=null)t.closest('.sl').remove()});m.querySelector('.g').onclick=()=>m.remove();
+ m.querySelector('form').onsubmit=async e=>{e.preventDefault();const fd=new FormData(e.target),v={};fs.forEach(f=>v[f.k]=f.t==='sched'?slotStr(e.target):f.t==='money'?(fm(fd.get(f.k))===''?'':+String(fd.get(f.k)).replace(/\D/g,'')):f.t==='file'?fd.getAll(f.k).filter(x=>x.size):f.t==='number'&&fd.get(f.k)!==''?+fd.get(f.k):fd.get(f.k));const b=e.target.querySelector('.p');b.disabled=true;try{await cb(v);m.remove()}catch(x){alert(x.message);b.disabled=false}}}
 const FIELDS={
  students:()=>[{k:'name',l:'Tên học viên'}],
- courses:()=>[{k:'name',l:'Tên môn'},{k:'type',l:'Loại',t:'select',o:[['main','Học chính'],['extra','Học thêm']]},{k:'billing',l:'Cách tính tiền',t:'select',o:[['none','Không tính tiền'],['course','Theo khóa'],['session','Theo buổi']]},{k:'price',l:'Giá trọn khóa (đ)',t:'money'},{k:'rate',l:'Giá mỗi buổi (đ)',t:'money'},{k:'finalSessions',l:'Số buổi cô chốt cuối khóa (để trống nếu chưa có)',t:'number'},{k:'days',l:'Lịch tuần, VD: T2 18:00-19:30, T5 18:00-19:30'}],
+ courses:()=>[{k:'name',l:'Tên môn'},{k:'type',l:'Loại',t:'select',o:[['main','Học chính'],['extra','Học thêm']]},{k:'billing',l:'Cách tính tiền',t:'select',o:[['none','Không tính tiền'],['course','Theo khóa'],['session','Theo buổi']]},{k:'price',l:'Giá trọn khóa (đ)',t:'money'},{k:'rate',l:'Giá mỗi buổi (đ)',t:'money'},{k:'finalSessions',l:'Số buổi cô chốt cuối khóa (để trống nếu chưa có)',t:'number'},{k:'start',l:'Ngày bắt đầu khóa (đếm buổi từ ngày này)',t:'date'},{k:'end',l:'Ngày kết thúc khóa (nếu có)',t:'date'},{k:'days',l:'Lịch học trong tuần (chọn thứ, giờ bắt đầu, giờ kết thúc)',t:'sched'}],
  fees:()=>[{k:'name',l:'Tên khoản (học phí, CSVC, quỹ lớp…)'},{k:'amount',l:'Số tiền (đ)',t:'money'},{k:'due',l:'Hạn nộp (có thể bỏ trống)',t:'date'},{k:'note',l:'Ghi chú'}],
  grades:()=>[{k:'courseId',l:'Môn',t:'select',o:mine('courses').map(c=>[c.id,c.name])},{k:'kind',l:'Loại bài (miệng, 15 phút, giữa kỳ…)'},{k:'score',l:'Điểm',t:'number'},{k:'max',l:'Thang điểm',t:'number',v:10},{k:'date',l:'Ngày',t:'date',v:today()},{k:'note',l:'Ghi chú'}]};
 const TITLE={students:'học viên',courses:'môn học',fees:'khoản thu',grades:'điểm'};
@@ -120,25 +129,25 @@ const SK={ocean:['Xanh ngọc',['#0E5A68','#B4492F','#5A4FB0','#2F7D4F','#A5640A
  forest:['Rừng',['#2F7D4F','#7A5A2B','#2D6A8A','#8A4F7D','#B26A1B'],'#1D2A1F','#EDF3EC']};
 const LV=[75,85,100,125,150,175],LOADED={};
 const skin=()=>SK[document.documentElement.dataset.skin]?document.documentElement.dataset.skin:'ocean',neu=()=>SK[skin()][2];
-const setSkin=k=>{document.documentElement.dataset.skin=k;try{localStorage.setItem('sh_skin',k)}catch(e){}document.querySelector('meta[name=theme-color]').content=SK[k][3]};
-let Z=100;const setZ=v=>{Z=v;document.documentElement.style.setProperty('--z',v/100);try{localStorage.setItem('sh_z',v)}catch(e){}};
-try{const z0=+localStorage.getItem('sh_z');setZ(LV.includes(z0)?z0:100)}catch(e){}
+const setSkin=k=>{document.documentElement.dataset.skin=k;try{localStorage.setItem('kt_skin',k)}catch(e){}document.querySelector('meta[name=theme-color]').content=SK[k][3]};
+let Z=100;const setZ=v=>{Z=v;document.documentElement.style.setProperty('--z',v/100);try{localStorage.setItem('kt_z',v)}catch(e){}};
+try{const z0=+localStorage.getItem('kt_z');setZ(LV.includes(z0)?z0:100)}catch(e){}
 setSkin(skin());
 if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
 /* giờ, ngày, lời chào, thời tiết */
 const DN=['Chủ nhật','Thứ 2','Thứ 3','Thứ 4','Thứ 5','Thứ 6','Thứ 7'],WXI=c=>c===0?'☀️':c<3?'🌤️':c===3?'☁️':c<50?'🌫️':c<70?'🌧️':c>=95?'⛈️':c>=80?'🌦️':'☁️';
-let WX=null;try{WX=JSON.parse(localStorage.getItem('sh_wx'))}catch(e){}
+let WX=null;try{WX=JSON.parse(localStorage.getItem('kt_wx'))}catch(e){}
 const paintWx=()=>{const e=$('#wx');if(e)e.textContent=WX?`${WXI(WX.c)} ${WX.T}°C${WX.r!=null?' · mưa '+WX.r+'%':''}`:''};
 async function getWx(){if(WX&&Date.now()-WX.t<6e5)return;let j=null;const u=PURL(),q='current=temperature_2m,weather_code&daily=precipitation_probability_max&timezone=auto&forecast_days=1';
  try{if(u){const r=await fetch(u+'/weather?lat=21.32&lon=105.40&'+q);if(r.ok)j=await r.json()}}catch(e){}
  if(!j)try{const r=await fetch('https://api.open-meteo.com/v1/forecast?latitude=21.32&longitude=105.40&'+q);if(r.ok)j=await r.json()}catch(e){}
  if(!j||!j.current)return;WX={t:Date.now(),c:j.current.weather_code,T:Math.round(j.current.temperature_2m),r:j.daily?.precipitation_probability_max?.[0]};
- try{localStorage.setItem('sh_wx',JSON.stringify(WX))}catch(e){}paintWx()}
+ try{localStorage.setItem('kt_wx',JSON.stringify(WX))}catch(e){}paintWx()}
 function tick(){const n=new Date(),a=$('#tm'),b=$('#dt');if(a)a.textContent=n.toLocaleTimeString('vi-VN',{hour:'2-digit',minute:'2-digit'});if(b)b.textContent=DN[n.getDay()]+', '+n.toLocaleDateString('vi-VN',{day:'2-digit',month:'2-digit'})}
 setInterval(tick,15000);document.addEventListener('visibilitychange',()=>{if(!document.hidden){tick();getWx()}});
 const greet=()=>{const h=new Date().getHours();return h>=4&&h<12?'Chào buổi sáng':h>=12&&h<18?'Chào buổi chiều':'Chào buổi tối'};
 function header(){const dw=new Date().getDay(),L=D.courses.flatMap(c=>{const s=D.students.find(x=>x.id===c.studentId);return s?sched(c).filter(x=>x.d===dw).map(x=>({t:x.t,txt:`${s.name} · ${c.name} ${x.t}`.trim()})):[]}).sort((a,b)=>a.t.localeCompare(b.t)),nm=((user.displayName||'').trim().split(/\s+/).pop())||'';
- return `<header><div id="hb"><span><b id="tm"></b><span id="dt"></span></span><span class="wx" id="wx"></span><button id="gear" data-a="cfg" aria-label="Tùy chỉnh">⚙️</button></div><h1>${greet()}${nm?', '+esc(nm):''}</h1><p class="sub">${L.length?'Hôm nay: '+esc(L.map(x=>x.txt).join(' · ')):'Hôm nay không có lịch học.'}</p></header>`}
+ return `<header><div id="hb"><span><b id="tm"></b><span id="dt"></span></span><span class="wx" id="wx"></span><button id="gear" data-a="cfg" aria-label="Tùy chỉnh">⚙️</button></div><h1>${greet()}${nm?', '+esc(nm):''}</h1><p class="sub">${isAdmin()?'':'Chế độ xem · '}${L.length?'Hôm nay: '+esc(L.map(x=>x.txt).join(' · ')):'Hôm nay không có lịch học.'}</p></header>`}
 /* ẩn thanh tab khi cuộn xuống, chụm hai ngón để đổi cỡ chữ */
 let ly=0;function afterRender(){tick();paintWx();getWx();const m=$('main'),n=$('nav');if(m&&n){ly=m.scrollTop;m.onscroll=()=>{const y=m.scrollTop,d=y-ly;if(Math.abs(d)>8){n.classList.toggle('hide',d>0&&y>80);ly=y}}}queueSync()}
 let p0=0,p1=0;const pd=e=>Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);
@@ -146,20 +155,24 @@ document.addEventListener('touchstart',e=>{if(e.touches.length===2)p0=p1=pd(e)},
 document.addEventListener('touchmove',e=>{if(p0&&e.touches.length===2)p1=pd(e)},{passive:true});
 document.addEventListener('touchend',e=>{if(!p0||e.touches.length>1)return;const r=p1/p0,i=LV.indexOf(Z);p0=0;if(r>1.2&&i<LV.length-1){setZ(LV[i+1]);render()}else if(r<.83&&i>0){setZ(LV[i-1]);render()}},{passive:true});
 /* thông báo đẩy: mỗi máy gửi lịch học thêm 14 ngày tới lên Worker */
-const pget=()=>{try{return JSON.parse(localStorage.getItem('sh_p'))||{}}catch(e){return{}}},pset=o=>{try{localStorage.setItem('sh_p',JSON.stringify(o))}catch(e){}};
+const pget=()=>{try{return JSON.parse(localStorage.getItem('kt_p'))||{}}catch(e){return{}}},pset=o=>{try{localStorage.setItem('kt_p',JSON.stringify(o))}catch(e){}};
 const u8=s=>{s=s.replace(/-/g,'+').replace(/_/g,'/');while(s.length%4)s+='=';return Uint8Array.from(atob(s),c=>c.charCodeAt(0))};
 const papi=async(p,b)=>{const r=await fetch(PURL()+p,{method:b?'POST':'GET',headers:b?{'content-type':'application/json'}:{},body:b?JSON.stringify(b):undefined}),j=await r.json().catch(()=>({}));if(!r.ok)throw Error(j.error||'Máy chủ thông báo lỗi ('+r.status+')');return j};
 const pushSup=()=>'serviceWorker' in navigator&&'PushManager' in window&&'Notification' in window;
 function lessons(){const o={};for(let i=0;i<14;i++){const d=new Date();d.setDate(d.getDate()+i);const k=d.toLocaleDateString('sv'),dw=d.getDay();
- D.courses.filter(c=>c.type==='extra').forEach(c=>{const s=D.students.find(x=>x.id===c.studentId);if(!s)return;
+ D.courses.filter(c=>c.type==='extra').forEach(c=>{const s=D.students.find(x=>x.id===c.studentId);if(!s||(c.start&&k<c.start)||(c.end&&k>c.end))return;
   sched(c).filter(x=>x.d===dw).forEach(x=>{const m=(x.t||'').match(/(\d{1,2}):(\d{2})/);if(!m||D.sessions.some(z=>z.id===c.id+'_'+k&&z.status==='absent'))return;(o[k]??=[]).push({t:m[1].padStart(2,'0')+':'+m[2],st:s.name,c:c.name,id:c.id})})})}return o}
 async function pushSub(){const reg=await navigator.serviceWorker.ready;let s=await reg.pushManager.getSubscription();if(!s){const {pub}=await papi('/config');s=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:u8(pub)})}
  await papi('/subscribe',{sub:s.toJSON(),days:lessons(),tz:-new Date().getTimezoneOffset(),name:user.email});return s}
 let lastSync=null,qt=0;function queueSync(){clearTimeout(qt);qt=setTimeout(async()=>{try{if(!pget().on||!pushSup()||Notification.permission!=='granted'||!PURL()||!user||!COLS.every(c=>LOADED[c]))return;const j=JSON.stringify(lessons());if(j===lastSync)return;await pushSub();lastSync=j}catch(e){}},2000)}
+const me=()=>(user?.email||'').toLowerCase(),adm=()=>sp.admins||sp.members||[],vwr=()=>sp.viewers||[],isAdmin=()=>adm().includes(me());
+async function saveShare(a,v){a=[...new Set(a)];v=[...new Set(v)].filter(e=>!a.includes(e));const o={admins:a,viewers:v,members:[...a,...v]};await updateDoc(doc(db,'spaces',sid),o);sp={...sp,...o}}
+const shareHtml=()=>isAdmin()?`<p class="k">Chia sẻ cho người khác (email Google)</p>${[...adm().map(e=>[e,'Quản trị, được nhập liệu']),...vwr().map(e=>[e,'Chỉ xem'])].map(([e,r])=>`<div class="r"><div><b>${esc(e)}</b><small>${r}</small></div><div class="am">${e===me()?'':`<button data-a="unshare" data-id="${esc(e)}">Gỡ</button>`}</div></div>`).join('')}<button class="add" data-a="share">Thêm người được chia sẻ</button>`:`<p class="k">Bạn đang ở chế độ chỉ xem. Chỉ quản trị mới nhập liệu được.</p>`;
 function cfg(){document.getElementById('cfg')?.remove();const on=pget().on&&pushSup()&&Notification.permission==='granted',m=document.createElement('div');m.className='md';m.id='cfg';
- m.innerHTML=`<div class="box"><h2>Tùy chỉnh</h2><p class="k">Giao diện</p><div class="seg">${Object.keys(SK).map(k=>`<button class="${skin()===k?'on':''}" data-a="skin" data-id="${k}">${SK[k][0]}</button>`).join('')}</div><p class="k">Cỡ chữ (chụm hai ngón để đổi nhanh)</p><div class="seg">${LV.map(v=>`<button class="${Z===v?'on':''}" data-a="zoom" data-id="${v}">${v}%</button>`).join('')}</div><p class="k">Nhắc trước giờ học thêm 1 tiếng</p>${pushSup()?`<div class="seg">${on?'<button data-a="ptest">Gửi thử</button><button data-a="poff">Tắt nhắc</button>':'<button class="on" data-a="pon">Bật nhắc trên máy này</button>'}</div><p class="k" id="pm">${on?'Đang bật. Mỗi máy cần bật riêng.':''}</p>`:'<p class="k">Máy này chưa hỗ trợ. Trên iPhone: thêm app vào Màn hình chính (iOS 16.4 trở lên).</p>'}<div class="bt"><button data-a="out2">Đăng xuất</button><button class="p" data-a="cfgx">Xong</button></div></div>`;
+ m.innerHTML=`<div class="box"><h2>Tùy chỉnh</h2><p class="k">Giao diện</p><div class="seg">${Object.keys(SK).map(k=>`<button class="${skin()===k?'on':''}" data-a="skin" data-id="${k}">${SK[k][0]}</button>`).join('')}</div><p class="k">Cỡ chữ (chụm hai ngón để đổi nhanh)</p><div class="seg">${LV.map(v=>`<button class="${Z===v?'on':''}" data-a="zoom" data-id="${v}">${v}%</button>`).join('')}</div><p class="k">Nhắc trước giờ học thêm 1 tiếng</p>${pushSup()?`<div class="seg">${on?'<button data-a="ptest">Gửi thử</button><button data-a="poff">Tắt nhắc</button>':'<button class="on" data-a="pon">Bật nhắc trên máy này</button>'}</div><p class="k" id="pm">${on?'Đang bật. Mỗi máy cần bật riêng.':''}</p>`:'<p class="k">Máy này chưa hỗ trợ. Trên iPhone: thêm app vào Màn hình chính (iOS 16.4 trở lên).</p>'}${shareHtml()}<div class="bt"><button data-a="out2">Đăng xuất</button><button class="p" data-a="cfgx">Xong</button></div></div>`;
  document.body.append(m);m.onclick=e=>{if(e.target===m)m.remove()}}
-const EXTRA=id=>({cfg,cfgx:()=>document.getElementById('cfg')?.remove(),skin:()=>{setSkin(id);render();cfg()},zoom:()=>{setZ(+id);render();cfg()},
+const EXTRA=id=>({share:()=>ask('Chia sẻ KidTrack',[{k:'e',l:'Email Google của người được chia sẻ',t:'email'},{k:'r',l:'Quyền',t:'select',o:[['v','Chỉ xem (theo dõi)'],['a','Quản trị (được nhập liệu)']]}],{},async v=>{const e=(v.e||'').trim().toLowerCase();if(!e.includes('@'))throw Error('Email chưa đúng.');if(e===me())throw Error('Không đổi quyền của chính mình.');const a=adm().filter(x=>x!==e),w=vwr().filter(x=>x!==e);(v.r==='a'?a:w).push(e);await saveShare(a,w);cfg()}),
+ unshare:()=>{if(!confirm('Gỡ quyền truy cập của '+id+'?'))return;return saveShare(adm().filter(x=>x!==id),vwr().filter(x=>x!==id)).then(cfg)},cfg,cfgx:()=>document.getElementById('cfg')?.remove(),skin:()=>{setSkin(id);render();cfg()},zoom:()=>{setZ(+id);render();cfg()},
  out2:()=>{document.getElementById('cfg')?.remove();return signOut(auth)},
  pon:async()=>{try{if(!PURL())throw Error('Chưa cấu hình địa chỉ Worker trong push-config.js.');if(await Notification.requestPermission()!=='granted')throw Error('Quyền thông báo đang bị tắt. Hãy bật trong cài đặt trình duyệt hoặc thiết bị.');await pushSub();pset({on:1});cfg()}catch(e){alert(e.message)}},
  poff:async()=>{try{const s=await (await navigator.serviceWorker.ready).pushManager.getSubscription();if(s){await papi('/unsubscribe',{endpoint:s.endpoint}).catch(()=>{});await s.unsubscribe()}pset({});lastSync=null;cfg()}catch(e){alert(e.message)}},
@@ -177,9 +190,18 @@ function all(){const dw=new Date().getDay();
  return `<p class="k">${D.students.length?'Chọn một học viên để xem chi tiết':'Chưa có học viên nào.'}</p>`+D.students.map((s,i)=>{const n=D.courses.filter(c=>c.studentId===s.id&&sched(c).some(x=>x.d===dw)).length;return `<button class="sc" style="--c:${col(i)}" data-a="stu" data-id="${s.id}"><b>${esc(s.name)}</b><span>Còn phải đóng</span><strong>${vnd(left(duesOf(s.id)))}</strong><small>${n} lớp hôm nay</small></button>`}).join('')+addb('Thêm học viên','add','students')+`<button class="out" data-a="out">Đăng xuất</button>`}
 function home(){const it=dues().filter(i=>i.due>i.paid),dw=new Date().getDay(),td=mine('courses').flatMap(c=>sched(c).filter(s=>s.d===dw).map(s=>row(c.name,esc(s.t),kind(c)))).join('');
  return card('Cần đóng',it.map(i=>row(i.name,vnd(i.due-i.paid),i.sub,btn('pay','',i.id,'Ghi đóng'))).join('')||empty('Không còn khoản nào cần đóng.'))+card('Lịch hôm nay ('+DOW[dw]+')',td||empty('Hôm nay không có lịch học.'))}
-function lich(){const dw=new Date(att+'T00:00').getDay(),cs=mine('courses').filter(c=>sched(c).some(s=>s.d===dw)||D.sessions.some(s=>s.courseId===c.id&&s.date===att)),st=[['present','Có học'],['absent','Nghỉ'],['makeup','Học bù']];
- const wk=[1,2,3,4,5,6,0].map(d=>{const l=mine('courses').flatMap(c=>sched(c).filter(s=>s.d===d).map(s=>row(c.name,esc(s.t),kind(c)))).join('');return l?`<p class="k"><b>${DOW[d]}</b></p>${l}`:''}).join('');
- return card('Điểm danh',`<label class="k">Ngày<input type="date" id="att" class="dt" value="${att}"></label>`+(cs.map(c=>{const cur=D.sessions.find(s=>s.id===c.id+'_'+att)?.status;return `<div class="r"><div><b>${esc(c.name)}</b><small>${esc(sched(c).filter(s=>s.d===dw).map(s=>s.t).join(', ')||'Ngoài lịch')}</small><div class="seg">${st.map(s=>`<button class="${cur===s[0]?'on':''}" data-a="mark" data-id="${c.id}" data-s="${s[0]}">${s[1]}</button>`).join('')}</div></div></div>`}).join('')||empty('Ngày này không có lịch học.'))+addb('Ghi buổi học bù hoặc ngoài lịch','extra',''))+card('Lịch tuần',wk||empty('Chưa có lịch. Thêm lịch tuần trong mục Môn.'))}
+const inR=(c,d)=>(!c.start||d>=c.start)&&(!c.end||d<=c.end);
+function rowsOf(c){const t=today(),L=sched(c),o={};let st=c.start;if(!st){const d=new Date();d.setDate(d.getDate()-30);st=d.toLocaleDateString('sv')}
+ const en=c.end&&c.end<t?c.end:t;
+ for(let d=new Date(st+'T00:00');;d.setDate(d.getDate()+1)){const k=d.toLocaleDateString('sv');if(k>en)break;L.filter(x=>x.d===d.getDay()).forEach(x=>o[k]={d:k,t:x.t})}
+ D.sessions.filter(x=>x.courseId===c.id&&inR(c,x.date)).forEach(x=>{o[x.date]=o[x.date]||{d:x.date,t:'ngoài lịch'}});
+ return Object.values(o).sort((a,b)=>b.d.localeCompare(a.d))}
+function lich(){const wk=[1,2,3,4,5,6,0].map(d=>{const l=mine('courses').flatMap(c=>sched(c).filter(s=>s.d===d).map(s=>row(c.name,esc(s.t),kind(c)))).join('');return l?`<p class="k"><b>${DOW[d]}</b></p>${l}`:''}).join('');
+ const cs=mine('courses').map(c=>{const R=rowsOf(c),S=k=>D.sessions.find(x=>x.id===c.id+'_'+k)?.status,all=D.sessions.filter(x=>x.courseId===c.id&&inR(c,x.date)),di=all.filter(x=>x.status!=='absent').length,ng=all.length-di,ch=R.filter(r=>!S(r.d)).length;
+  const fee=c.billing==='session'?`<p class="k">Tạm tính: ${di} buổi × ${vnd(c.rate)} = <b>${vnd(di*(+c.rate||0))}</b>${c.finalSessions!==''&&c.finalSessions!=null?` · cô chốt ${c.finalSessions} buổi = <b>${vnd(owed(c))}</b>`:''}</p>`:c.billing==='course'?`<p class="k">Học phí trọn khóa: <b>${vnd(c.price)}</b></p>`:'';
+  const rows=R.slice(0,20).map(r=>{const s=S(r.d),b=(v,l,cl='')=>`<button class="${cl}${s===v?' on':''}" data-a="mark" data-id="${c.id}" data-d="${r.d}" data-s="${v}">${l}</button>`;return row(DOW[new Date(r.d+'T00:00').getDay()]+' '+fmtD(r.d),s==='makeup'?b('makeup','Học bù'):b('present','Đi học')+b('absent','Nghỉ','no'),r.t)}).join('');
+  return card(`${esc(c.name)} · ${kind(c)}`,`<p class="k"><span class="pill o">Đi học ${di}</span> <span class="pill w">Nghỉ ${ng}</span> <span class="pill">Chưa ghi ${ch}</span>${c.start?' · từ '+fmtD(c.start):''}${c.end?' đến '+fmtD(c.end):''}</p>${fee}`+(rows||empty('Chưa có buổi nào. Nhập lịch tuần và ngày bắt đầu khóa trong mục Môn.'))+(R.length>20?empty('Đang hiển thị 20 buổi gần nhất.'):''))}).join('');
+ return (cs||card('Điểm danh',empty('Chưa có môn học. Thêm môn trong mục Môn.')))+addb('Ghi buổi học bù hoặc ngoài lịch','extra','')+card('Lịch tuần',wk||empty('Chưa có lịch tuần.'))}
 function mon(){const s=D.students.find(x=>x.id===sel);
  return card('Môn học',(mine('courses').map(c=>row(c.name,'',`${kind(c)} · ${c.billing==='course'?'khóa '+vnd(c.price):c.billing==='session'?vnd(c.rate)+'/buổi':'không tính tiền'} · đã học ${nSess(c)} buổi`,btn('edit','courses',c.id,'Sửa')+btn('del','courses',c.id,'Xóa'))).join('')||empty('Chưa có môn nào.'))+addb('Thêm môn học','add','courses'))+card('Học viên',row(s.name,'',null,btn('edit','students',s.id,'Sửa tên')+btn('del','students',s.id,'Xóa')))}
 function tien(){const t=ts=>ts?.toDate?.().toLocaleString('vi-VN')||'đang lưu…';
@@ -195,16 +217,16 @@ function render(){const A=$('#app');
  if(!user)return A.innerHTML=`<main class="c"><h1>KidTrack</h1><p>Lịch học, học phí và điểm số của các con.</p><button class="p" data-a="login">Đăng nhập bằng Google</button></main>`;
  if(!sid)return A.innerHTML=`<main class="c"><h1>Tạo không gian chung</h1><p>Nhập email Google của người cùng quản lý để hai người xem và nhập chung một sổ.</p><button class="p" data-a="setup">Bắt đầu</button> <button data-a="out">Đăng xuất</button></main>`;
  const i=D.students.findIndex(s=>s.id===sel),st=D.students[i],home_=sel==='all'||!st;
- document.documentElement.style.setProperty('--c',home_?neu():col(i));
+ document.documentElement.style.setProperty('--c',home_?neu():col(i));document.body.dataset.role=isAdmin()?'admin':'viewer';
  const tabs=`<div class="tb"><button class="${home_?'on':''}" style="--c:${neu()}" data-a="stu" data-id="all">Cả nhà</button>${D.students.map((s,j)=>`<button class="${s.id===sel?'on':''}" style="--c:${col(j)}" data-a="stu" data-id="${s.id}">${esc(s.name)}</button>`).join('')}<button data-a="add" data-c="students" aria-label="Thêm học viên">+</button></div>`;
  const body=home_?all():`<div class="hero"><small>${esc(st.name)}</small><p>Còn phải đóng</p><strong>${vnd(left(dues()))}</strong></div>${VIEW[tab]()}`;
  const sy=$('main')?.scrollTop||0;A.innerHTML=header()+`<main>${tabs}${body}</main>`+(home_?'':`<nav>${NAV.map(n=>`<button class="${tab===n[0]?'on':''}" data-a="tab" data-id="${n[0]}">${svg(n[0])}${n[1]}</button>`).join('')}</nav>`);
  $('main').scrollTop=sy;afterRender();const a=$('#att');if(a)a.onchange=()=>{att=a.value||today();render()}}
-document.addEventListener('click',async e=>{const b=e.target.closest('[data-a]');if(!b)return;const {a,c,id,s}=b.dataset;
+document.addEventListener('click',async e=>{const b=e.target.closest('[data-a]');if(!b)return;const {a,c,id,s}=b.dataset;if(['add','edit','del','pay','mark','extra'].includes(a)&&!isAdmin())return alert('Bạn đang ở chế độ chỉ xem.');
  const F={...EXTRA(id),login:()=>signInWithPopup(auth,new GoogleAuthProvider()),out:()=>signOut(auth),tab:()=>{tab=id;render()},stu:()=>{sel=id;render();scrollTo(0,0)},add:()=>form(c),edit:()=>form(c,id),pay:()=>payForm(id),img:()=>show(b.src),
  del:()=>confirm('Xóa mục này?')&&deleteDoc(ref(c,id)),
- mark:()=>setDoc(ref('sessions',id+'_'+att),{studentId:sel,courseId:id,date:att,status:s,by:user.email,createdAt:serverTimestamp()}),
- extra:()=>{if(!mine('courses').length)return;ask('Ghi buổi học ngày '+fmtD(att),[{k:'c',l:'Môn',t:'select',o:mine('courses').map(x=>[x.id,x.name])},{k:'s',l:'Trạng thái',t:'select',o:[['makeup','Học bù'],['present','Có học']]}],{},v=>setDoc(ref('sessions',v.c+'_'+att),{studentId:sel,courseId:v.c,date:att,status:v.s,by:user.email,createdAt:serverTimestamp()}))},
- setup:()=>ask('Tạo không gian chung',[{k:'name',l:'Tên (VD: Gia đình Hùng)'},{k:'p',l:'Email Google của vợ',t:'email'}],{},async v=>{const mem=[...new Set([user.email,v.p].map(x=>(x||'').trim().toLowerCase()).filter(Boolean))],r=await addDoc(collection(db,'spaces'),{name:v.name,members:mem,createdAt:serverTimestamp()});sid=r.id;listen();render()})};
+ mark:()=>{const d=b.dataset.d||att,k=id+'_'+d,cur=D.sessions.find(x=>x.id===k)?.status;return cur===s?deleteDoc(ref('sessions',k)):setDoc(ref('sessions',k),{studentId:sel,courseId:id,date:d,status:s,by:user.email,createdAt:serverTimestamp()})},
+ extra:()=>{if(!mine('courses').length)return;ask('Ghi buổi học bù hoặc ngoài lịch',[{k:'c',l:'Môn',t:'select',o:mine('courses').map(x=>[x.id,x.name])},{k:'d',l:'Ngày',t:'date',v:today()},{k:'s',l:'Trạng thái',t:'select',o:[['makeup','Học bù (tính 1 buổi)'],['present','Đi học (buổi ngoài lịch)']]}],{},v=>{if(!v.d)throw Error('Cần chọn ngày.');return setDoc(ref('sessions',v.c+'_'+v.d),{studentId:sel,courseId:v.c,date:v.d,status:v.s,by:user.email,createdAt:serverTimestamp()})})},
+ setup:()=>ask('Tạo không gian chung',[{k:'name',l:'Tên (VD: Gia đình Hùng)'},{k:'p',l:'Email Google của vợ',t:'email'}],{},async v=>{const mem=[...new Set([user.email,v.p].map(x=>(x||'').trim().toLowerCase()).filter(Boolean))],r=await addDoc(collection(db,'spaces'),{name:v.name,admins:mem,viewers:[],members:mem,createdAt:serverTimestamp()});sid=r.id;sp={name:v.name,admins:mem,viewers:[],members:mem};listen();render()})};
  try{await F[a]?.()}catch(x){alert(x.message)}});
 </script></body></html>
