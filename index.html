@@ -112,6 +112,27 @@ html[data-skin=sunflower] body::before{content:"";position:fixed;left:0;right:0;
 table.tk{table-layout:fixed;font-size:12px}table.tk td,table.tk th{padding:6px 3px;text-align:center;vertical-align:middle;word-break:break-word}table.tk th:first-child{width:56px;text-align:left}table.tk small{display:block;color:var(--mut);font-size:10px;font-weight:400}
 .tr2{margin-top:10px}.tr2 b{font-weight:500;font-size:13px}.tgi{display:flex;gap:6px}.tgi input,.tp input{flex:1;min-width:0;width:auto;margin:4px 0 0}.tp{display:flex;gap:6px;align-items:center;margin-top:6px;font-size:13px}.tp span:first-child{width:78px;flex:0 0 auto}.tp input{margin:0}
 body[data-role=viewer] [data-a=tkbedit]{display:none}
+html[data-skin=sunflower] #hb{background-color:#4A3310;background-image:linear-gradient(90deg,rgba(38,26,8,.80) 0%,rgba(60,40,10,.52) 55%,rgba(60,40,10,.22) 100%),url("https://images.unsplash.com/photo-1548291616-bfccc8db731d?fm=jpg&q=50&w=900&auto=format&fit=crop&ixlib=rb-4.1.0");background-size:cover;background-position:center 62%;text-shadow:0 1px 3px rgba(0,0,0,.5)}
+
+#hb{display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"tm gr" "dt dt" "wx wu";align-items:center;gap:3px 10px;padding:10px 14px}
+#hb .tl,#hb .tr{display:contents}
+#tm{grid-area:tm;font-size:28px}#gear{grid-area:gr;justify-self:end}
+#dt{grid-area:dt;margin:0;font-size:13px;white-space:nowrap;min-width:0}
+#hb .wl{grid-area:wx;margin:0}#wu{grid-area:wu;justify-self:end;text-align:right;margin:0}
+.cd.hl{border:2px solid color-mix(in srgb,var(--c) 50%,var(--ln));box-shadow:0 4px 16px color-mix(in srgb,var(--c) 16%,transparent)}
+.cd.hl>h2{color:var(--c);font-size:16px;font-weight:700}
+.tkw{overflow-x:auto;margin:4px -6px 0;padding:0 6px}
+table.tk{min-width:430px;table-layout:fixed;border-collapse:separate;border-spacing:3px;font-size:12.5px}
+table.tk td,table.tk th{border:0;padding:0;text-align:center;vertical-align:middle;word-break:break-word}
+table.tk th{color:var(--mut);font-weight:600;font-size:12px;padding:4px 2px}
+table.tk th:first-child{width:56px}
+table.tk th.tp1{text-align:left;color:var(--ink)}
+table.tk th small{display:block;font-weight:400;font-size:10px;color:var(--mut)}
+table.tk tr.ses th{text-align:left;color:var(--c);font-size:11px;letter-spacing:.5px;text-transform:uppercase;padding:9px 2px 1px}
+table.tk td.td,table.tk th.td{background:color-mix(in srgb,var(--c) 12%,transparent);border-radius:8px}
+table.tk th.td{color:var(--c)}
+.sj{border-radius:8px;padding:5px 3px;min-height:40px;display:flex;flex-direction:column;justify-content:center;background:color-mix(in srgb,hsl(var(--h) 70% 50%) 22%,var(--card));border-left:3px solid hsl(var(--h) 65% 48%)}
+.sj b{font-weight:600;font-size:12.5px;line-height:1.2}.sj small{display:block;color:var(--mut);font-size:10px;margin-top:1px}
 </style></head><body><div id="app"><div class="ld"><img src="icon-192.png" alt=""><b>KidTrack</b></div></div>
 <script type="module">
 /* ==== DÁN CẤU HÌNH FIREBASE CỦA ANH VÀO ĐÂY (Project settings > Your apps > Web) ==== */
@@ -122,7 +143,7 @@ import {initializeAuth,GoogleAuthProvider,signInWithPopup,signOut,onAuthStateCha
 import {initializeFirestore,persistentLocalCache,persistentMultipleTabManager,getFirestore,collection,doc,addDoc,setDoc,updateDoc,deleteDoc,onSnapshot,query,where,getDocs,serverTimestamp} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 const app=initializeApp(FB),auth=initializeAuth(app,{persistence:[indexedDBLocalPersistence,browserLocalPersistence]});let db;try{db=initializeFirestore(app,{localCache:persistentLocalCache({tabManager:persistentMultipleTabManager()})})}catch(e){db=getFirestore(app)}
 try{navigator.storage?.persist?.()}catch(e){}
-const APP_VER='1.5.1',APP_BUILD='15/11/2026 10:10';
+const APP_VER='1.5.3',APP_BUILD='15/11/2026 15:01';
 const $=s=>document.querySelector(s),esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const fm=n=>{const d=String(n??'').replace(/\D/g,'');return d?(+d).toLocaleString('vi-VN'):''},vnd=n=>Math.round(n||0).toLocaleString('vi-VN')+' đ',today=()=>new Date().toLocaleDateString('sv'),fmtD=s=>s?s.split('-').reverse().join('/'):'';
 const DOW=['CN','T2','T3','T4','T5','T6','T7'],COLS=['students','courses','sessions','fees','payments','grades','tkbimgs','tkbs'];
@@ -302,12 +323,15 @@ const TD=[1,2,3,4,5],PS=[['S1','Sáng · Tiết 1'],['S2','Sáng · Tiết 2'],[
  PT={S1:['07:30','08:15'],S2:['08:20','09:05'],S3:['09:20','10:05'],S4:['10:10','10:55'],S5:['11:00','11:45'],C1:['14:00','14:45'],C2:['14:50','15:35'],C3:['15:50','16:35'],C4:['16:40','17:25']},
  pl=p=>(p[0]==='S'?'Sáng ':'Chiều ')+p[1],
  latestTkb=()=>[...mine('tkbs')].sort((a,b)=>(b.from||'').localeCompare(a.from||'')||((b.createdAt?.seconds||9e9)-(a.createdAt?.seconds||9e9)))[0];
-const tkbTable=t=>{if(!t)return empty('Chưa có thời khóa biểu chính khóa. Bấm nút bên dưới để tạo.');const per=t.per||PT,rows=PS.filter(([p])=>TD.some(d=>t.grid?.[d]?.[p]?.s));if(!rows.length)return empty('Thời khóa biểu đang trống.');
- return `<div style="overflow-x:auto"><table class="tk"><tr><th></th>${TD.map(d=>`<th>${DOW[d]}</th>`).join('')}</tr>${rows.map(([p])=>`<tr><th>${pl(p)}<small>${per[p]?.[0]||''}</small></th>${TD.map(d=>{const c=t.grid?.[d]?.[p];return `<td>${c&&c.s?esc(c.s)+(c.t?`<small>${esc(c.t)}</small>`:''):''}</td>`}).join('')}</tr>`).join('')}</table></div>`};
+const subjHue=n=>{let h=0;for(const ch of String(n).toLowerCase())h=(h*31+ch.charCodeAt(0))>>>0;return [205,18,142,282,45,345,172,92,320,232][h%10]};
+const tkbTable=t=>{if(!t)return empty('Chưa có thời khóa biểu chính khóa. Bấm nút bên dưới để tạo.');const per=t.per||PT,td=new Date().getDay(),rows=PS.filter(([p])=>TD.some(d=>t.grid?.[d]?.[p]?.s));if(!rows.length)return empty('Thời khóa biểu đang trống.');
+ const cell=(d,p)=>{const c=t.grid?.[d]?.[p],k=d===td?' class="td"':'';return c&&c.s?`<td${k}><div class="sj" style="--h:${subjHue(c.s)}"><b>${esc(c.s)}</b>${c.t?`<small>${esc(c.t)}</small>`:''}</div></td>`:`<td${k}></td>`};
+ let out='',cur='';rows.forEach(([p])=>{if(p[0]!==cur){cur=p[0];out+=`<tr class="ses"><th colspan="${TD.length+1}">${cur==='S'?'Buổi sáng':'Buổi chiều'}</th></tr>`}out+=`<tr><th class="tp1">Tiết ${p[1]}<small>${per[p]?.[0]||''}${per[p]?.[1]?'–'+per[p][1]:''}</small></th>${TD.map(d=>cell(d,p)).join('')}</tr>`});
+ return `<div class="tkw"><table class="tk"><tr><th></th>${TD.map(d=>`<th${d===td?' class="td"':''}>${DOW[d]}${d===td?'<small>Hôm nay</small>':''}</th>`).join('')}</tr>${out}</table></div>`};
 const tkbPayload=()=>{const o={};D.students.forEach(s=>{const t=[...D.tkbs.filter(x=>x.studentId===s.id)].sort((a,b)=>(b.from||'').localeCompare(a.from||'')||((b.createdAt?.seconds||9e9)-(a.createdAt?.seconds||9e9)))[0];if(!t)return;const g={};TD.forEach(d=>{const l=[];PS.forEach(([p])=>{const n=t.grid?.[d]?.[p]?.s;if(n&&l[l.length-1]!==n)l.push(n)});if(l.length)g[d]=l});if(Object.keys(g).length)o[s.name]=g});return o};
 function tkb(){const t=latestTkb(),ex=[1,2,3,4,5,6,0].map(d=>{const l=mine('courses').filter(c=>c.type==='extra').flatMap(c=>sched(c).filter(s=>s.d===d).map(s=>({t:s.t||'',c}))).sort((a,b)=>(a.t||'99').localeCompare(b.t||'99')).map(x=>row(x.c.name,esc(x.t),x.c.teacher?'GV: '+x.c.teacher:'Học thêm')).join('');return l?`<p class="k"><b>${DOW[d]}</b></p>${l}`:''}).join('');
  const im=mine('tkbimgs').sort((a,b)=>(b.date||'').localeCompare(a.date||'')).map((x,i)=>`<div class="r"><div><b>${i?'Bản cũ':'Bản mới nhất'} · áp dụng từ ${fmtD(x.date)}</b>${x.note?`<small>${esc(x.note)}</small>`:''}<div class="th"><img src="${x.img}" data-a="img" alt="Thời khóa biểu" style="width:128px;height:96px"></div></div><div class="am">${btn('del','tkbimgs',x.id,'Xóa')}</div></div>`).join('');
- return card('Thời khóa biểu chính khóa (T2–T6)'+(t?' · từ '+fmtD(t.from):''),tkbTable(t)+addb(t?'Tạo TKB mới / sửa TKB':'Tạo thời khóa biểu','tkbedit',''))+card('Lịch học thêm trong tuần',ex||empty('Chưa có lịch học thêm.'))+card('Ảnh thời khóa biểu',(im||empty('Chưa có ảnh. Khi nhà trường đổi TKB, chụp ảnh tải lên đây để lưu lại, rồi tạo TKB mới ở trên.'))+addb('Tải ảnh thời khóa biểu mới','tkbadd',''))}
+ return card('Thời khóa biểu chính khóa'+(t?' · từ '+fmtD(t.from):''),tkbTable(t)+addb(t?'Tạo TKB mới / sửa TKB':'Tạo thời khóa biểu','tkbedit','')).replace('class="cd"','class="cd hl"')+card('Lịch học thêm trong tuần',ex||empty('Chưa có lịch học thêm.'))+card('Ảnh thời khóa biểu',(im||empty('Chưa có ảnh. Khi nhà trường đổi TKB, chụp ảnh tải lên đây để lưu lại, rồi tạo TKB mới ở trên.'))+addb('Tải ảnh thời khóa biểu mới','tkbadd',''))}
 async function tkbApply(grid,per){const subj={};
  TD.forEach(d=>{let prev=null;PS.map(([p])=>({p,c:grid[d]?.[p]})).filter(x=>x.c&&x.c.s).forEach(x=>{const [a,b]=per[x.p]||['',''],k=x.c.s.trim().toLowerCase(),o=subj[k]??={name:x.c.s.trim(),t:'',slots:[]};if(x.c.t&&!o.t)o.t=x.c.t.trim();
   if(prev&&prev.k===k&&prev.p[0]===x.p[0]&&+prev.p[1]+1===+x.p[1]){prev.slot.b=b;prev.p=x.p}else{const slot={d,a,b};o.slots.push(slot);prev={k,p:x.p,slot}}})});
