@@ -70,23 +70,48 @@ async function run(env, now = Date.now()) {
       for (const l of (r.days || {})[dk] || []) {
         const m = /^(\d{1,2}):(\d{2})$/.exec(String(l.t));
         if (!m) continue;
-        const start = Date.UTC(+dk.slice(0, 4), +dk.slice(5, 7) - 1, +dk.slice(8, 10), +m[1], +m[2]) - off;
-        const lead = start - now, base = dk + "|" + l.t + "|" + l.id;
-        // Hai lần nhắc: khi còn 30-60 phút (nhắc "1 giờ") và khi còn 0-30 phút (nhắc "30 phút").
+        const Y = +dk.slice(0, 4), Mo = +dk.slice(5, 7) - 1, Dy = +dk.slice(8, 10), base = dk + "|" + l.t + "|" + l.id;
+        const lead = Date.UTC(Y, Mo, Dy, +m[1], +m[2]) - off - now, jobs = [], who = String(l.st).slice(0, 40), sj = String(l.c).slice(0, 40);
+        // Nhắc trước giờ học: khi còn 30-60 phút ("1 giờ") và khi còn 0-30 phút ("30 phút").
         const T = lead > 30 * 60000 && lead <= 60 * 60000 ? 60 : lead > 0 && lead <= 30 * 60000 ? 30 : 0;
-        if (!T) continue;
-        const key = base + "|" + T;
+        if (T) {
+          const mins = Math.max(1, Math.round(lead / 60000));
+          jobs.push({ key: base + "|" + T, title: T === 60 ? "Sắp đến giờ học thêm" : "Sắp vào học thêm", body: who + " học " + sj + " lúc " + l.t + " (còn " + (T === 60 ? (mins >= 55 ? "1 giờ" : mins + " phút") : (mins >= 25 ? "30 phút" : mins + " phút")) + ")." });
+        }
+        // Nhắc trước giờ tan học 10 phút.
+        const em = /^(\d{1,2}):(\d{2})$/.exec(String(l.e || ""));
+        if (em) {
+          const el = Date.UTC(Y, Mo, Dy, +em[1], +em[2]) - off - now;
+          if (el > 0 && el <= 10 * 60000) jobs.push({ key: base + "|E", title: "Sắp tan học", body: who + " sắp tan học " + sj + " lúc " + l.e + " (còn " + Math.max(1, Math.round(el / 60000)) + " phút)." });
+        }
+        for (const j of jobs) {
+          if (r.sent[j.key]) continue;
+          if (r.attempt[j.key] && now - r.attempt[j.key] < 3 * 60000) continue;
+          r.attempt[j.key] = now; dirty = true;
+          let status = 0; try { status = await push(env, r.sub, { title: j.title, body: j.body, tag: "lesson-" + j.key, url: "./" }); } catch (_) {}
+          if (status === 404 || status === 410) { delete subs[id]; break; }
+          if (status >= 200 && status < 300) { r.sent[j.key] = 1; delete r.attempt[j.key]; }
+        }
+        if (!subs[id]) break;
+      }
+      if (!subs[id]) break;
+    }
+    // 21:30 tối Chủ nhật đến thứ 5: nhắc thời khóa biểu chính khóa ngày mai và chuẩn bị đồ dùng học tập.
+    const lt = new Date(now + off), mod = lt.getUTCHours() * 60 + lt.getUTCMinutes(), wd = lt.getUTCDay();
+    if (subs[id] && r.tkb && wd <= 4 && mod >= 21 * 60 + 30 && mod < 22 * 60 + 30) {
+      const nd = wd + 1, DN = ["", "Thứ 2", "Thứ 3", "Thứ 4", "Thứ 5", "Thứ 6"];
+      for (const [name, g] of Object.entries(r.tkb)) {
+        const list = g && g[nd];
+        if (!Array.isArray(list) || !list.length) continue;
+        const key = today + "|TKB|" + String(name).slice(0, 30);
         if (r.sent[key]) continue;
         if (r.attempt[key] && now - r.attempt[key] < 3 * 60000) continue;
-        const mins = Math.max(1, Math.round(lead / 60000));
-        const left = T === 60 ? (mins >= 55 ? "1 giờ" : mins + " phút") : (mins >= 25 ? "30 phút" : mins + " phút");
-        const msg = { title: T === 60 ? "Sắp đến giờ học thêm" : "Sắp vào học thêm", body: String(l.st).slice(0, 40) + " học " + String(l.c).slice(0, 40) + " lúc " + l.t + " (còn " + left + ").", tag: "lesson-" + key, url: "./" };
         r.attempt[key] = now; dirty = true;
-        let status = 0; try { status = await push(env, r.sub, msg); } catch (_) {}
+        const body = DN[nd] + " học: " + list.slice(0, 10).map(x => String(x).slice(0, 24)).join(", ") + ". Nhớ soạn sách vở và chuẩn bị đồ dùng học tập.";
+        let status = 0; try { status = await push(env, r.sub, { title: "Chuẩn bị cho ngày mai · " + String(name).slice(0, 30), body, tag: "tkb-" + key, url: "./" }); } catch (_) {}
         if (status === 404 || status === 410) { delete subs[id]; break; }
         if (status >= 200 && status < 300) { r.sent[key] = 1; delete r.attempt[key]; }
       }
-      if (!subs[id]) break;
     }
   }
   if (dirty) await env.KV.put("subs", JSON.stringify(subs));
@@ -140,7 +165,7 @@ export default {
             weatherLoc = { lat:Math.round(lat * 100) / 100, lon:Math.round(lon * 100) / 100 };
           }
         }
-        subs[id] = { sub:s, days:b.days, tz:Number(b.tz), name:String(b.name || "").slice(0,80), weatherLoc, sent:old ? old.sent : {} };
+        subs[id] = { sub:s, days:b.days, tz:Number(b.tz), name:String(b.name || "").slice(0,80), weatherLoc, tkb:(b.tkb && typeof b.tkb === "object" && !Array.isArray(b.tkb)) ? b.tkb : {}, sent:old ? old.sent : {} };
         await env.KV.put("subs", JSON.stringify(subs)); return response({ ok:true }, 200, origin);
       }
       if (url.pathname === "/unsubscribe") { if (b.endpoint) delete subs[await sid(b.endpoint)]; await env.KV.put("subs", JSON.stringify(subs)); return response({ ok:true }, 200, origin); }
