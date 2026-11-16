@@ -115,10 +115,10 @@ html[data-skin=sunflower] body::before{content:"";position:fixed;left:0;right:0;
 table.tk{table-layout:fixed;font-size:12px}table.tk td,table.tk th{padding:6px 3px;text-align:center;vertical-align:middle;word-break:break-word}table.tk th:first-child{width:56px;text-align:left}table.tk small{display:block;color:var(--mut);font-size:10px;font-weight:400}
 .tr2{margin-top:10px}.tr2 b{font-weight:500;font-size:13px}.tgi{display:flex;gap:6px}.tgi input,.tp input{flex:1;min-width:0;width:auto;margin:4px 0 0}.tp{display:flex;gap:6px;align-items:center;margin-top:6px;font-size:13px}.tp span:first-child{width:78px;flex:0 0 auto}.tp input{margin:0}
 body[data-role=viewer] [data-a=tkbedit]{display:none}
-html[data-skin=sunflower] #hb{background-color:#4A3310;background-image:linear-gradient(90deg,rgba(38,26,8,.80) 0%,rgba(60,40,10,.52) 55%,rgba(60,40,10,.22) 100%),url("https://images.unsplash.com/photo-1548291616-bfccc8db731d?fm=jpg&q=50&w=900&auto=format&fit=crop&ixlib=rb-4.1.0");background-size:cover;background-position:center 62%;text-shadow:0 1px 3px rgba(0,0,0,.5)}
+html[data-skin=sunflower] #hb{background-color:#5A4219;background-image:linear-gradient(90deg,rgba(38,26,8,.68) 0%,rgba(60,40,10,.42) 55%,rgba(60,40,10,.15) 100%),url("https://images.unsplash.com/photo-1548291616-bfccc8db731d?fm=jpg&q=50&w=900&auto=format&fit=crop&ixlib=rb-4.1.0");background-size:cover;background-position:center 62%;text-shadow:0 1px 3px rgba(0,0,0,.5)}
 
 #headerPanel{position:relative;isolation:isolate;overflow:hidden;max-width:640px;margin:0 auto;padding:7px;box-sizing:border-box;background:var(--hp);border-radius:16px;box-shadow:0 2px 8px #0003}
-#hb{position:relative;display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"tm gr" "dt dt" "wx wu";align-items:center;gap:3px 10px;padding:10px 14px;background:#06172e88;border-radius:12px;box-shadow:inset 0 1px #ffffff20}
+#hb{position:relative;display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"tm gr" "dt dt" "wx wu";align-items:center;gap:3px 10px;padding:10px 14px;background:#193451c9;border-radius:12px;box-shadow:inset 0 1px #ffffff20}
 header h1.greeting{position:relative;z-index:2;display:flex;align-items:baseline;gap:8px;width:auto;max-width:none;box-sizing:border-box;margin:6px 0 0;padding:7px 11px;border-radius:12px;background:#06172e88;color:#fff;box-shadow:inset 0 1px #ffffff20;font-size:15px;line-height:1.2;white-space:nowrap;overflow:hidden}
 header h1.greeting small{font-size:11px;font-weight:400;color:#ffffffa8;overflow:hidden;text-overflow:ellipsis}
 #hb .tl,#hb .tr{display:contents}
@@ -149,7 +149,7 @@ html[data-skin=chelsea] body{font-family:"Avenir Next","Trebuchet MS",-apple-sys
 html[data-skin=chelsea] .pill.w{background:#3A2E18}html[data-skin=chelsea] .pill.o{background:#153d3d}
 html[data-skin=chelsea] #headerPanel{border:1px solid #568bd1;box-shadow:0 0 0 2px #60a8ff20,0 5px 18px #0009,inset 0 1px #dcecff33}
 html[data-skin=chelsea] #headerPanel::before{content:"";position:absolute;inset:0;z-index:0;pointer-events:none;background:url(assets/chelsea-banner.jpg) center 55%/cover no-repeat;opacity:.94;filter:brightness(.9) contrast(1.08) saturate(.95);-webkit-mask-image:linear-gradient(90deg,transparent 0%,rgba(0,0,0,.05) 18%,rgba(0,0,0,.32) 42%,rgba(0,0,0,.78) 66%,#000 82%);mask-image:linear-gradient(90deg,transparent 0%,rgba(0,0,0,.05) 18%,rgba(0,0,0,.32) 42%,rgba(0,0,0,.78) 66%,#000 82%)}
-html[data-skin=chelsea] #hb{background:#06172e88;box-shadow:inset 0 1px #ffffff20}
+html[data-skin=chelsea] #hb{background:#193451c9;box-shadow:inset 0 1px #ffffff20}
 html[data-skin=chelsea] #hb>*{position:relative;z-index:2}
 html[data-skin=chelsea] #tm{font-weight:800;letter-spacing:.8px;color:#f2f7ff;text-shadow:0 0 8px #66aaff99,0 2px #031128}
 html[data-skin=chelsea] #dt,html[data-skin=chelsea] #wu{color:#c4d8f5;text-shadow:0 1px 3px #031128cc}html[data-skin=chelsea] .wl{color:#f1d77c;text-shadow:0 1px 3px #031128cc}
@@ -220,7 +220,7 @@ import {initializeApp} from "https://www.gstatic.com/firebasejs/10.12.2/firebase
 import {initializeAuth,GoogleAuthProvider,signInWithPopup,signOut,onAuthStateChanged,browserLocalPersistence,indexedDBLocalPersistence,browserPopupRedirectResolver} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import {getFirestore,collection,doc,addDoc,setDoc,updateDoc,deleteDoc,onSnapshot,query,where,getDocs,serverTimestamp,Timestamp,writeBatch} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 const app=initializeApp(FB),auth=initializeAuth(app,{persistence:[indexedDBLocalPersistence,browserLocalPersistence]}),db=getFirestore(app);
-const APP_VER='1.10.34',APP_BUILD='16/11/2026 19:40';
+const APP_VER='1.10.35',APP_BUILD='16/11/2026 19:45';
 let swRegistration=null,appUpdateAvailable='',appUpdateStatus='';
 const $=s=>document.querySelector(s),esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const verCmp=(a,b)=>{const x=String(a).split('.').map(Number),y=String(b).split('.').map(Number);for(let i=0;i<Math.max(x.length,y.length);i++){const d=(x[i]||0)-(y[i]||0);if(d)return Math.sign(d)}return 0};
