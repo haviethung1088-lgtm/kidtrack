@@ -79,9 +79,9 @@ header .td{font-weight:500;margin-top:2px}.ls{padding:1px 0}.ls b{font-variant-n
 #hb .tl{min-width:0}#hb .tr{display:flex;flex-direction:column;align-items:flex-end;text-align:right;gap:2px;flex:0 0 auto}
 #tm{display:block;font-size:30px;line-height:1.1;font-weight:700;letter-spacing:.5px;font-variant-numeric:tabular-nums}
 #dt{margin:4px 0 0;font-size:13px;color:#ffffffd9;line-height:1.35}
-#gear,#zoomGear,#wr{border:0;border-radius:99px;background:transparent;color:#fff;width:24px;height:24px;padding:0;display:inline-flex;align-items:center;justify-content:center;font-size:14px;line-height:1;filter:brightness(1.2)}
-#zoomGear{font-size:11px;font-weight:800;letter-spacing:-.5px}#wr{width:20px;height:20px;font-size:12px}
-.wl{display:flex;align-items:center;gap:6px;font-size:14px;font-weight:500;white-space:nowrap;margin-top:2px}#wr{width:24px;height:24px;font-size:14px}
+#gear,#zoomGear,#wr{border:0;border-radius:99px;background:transparent;color:#fff;width:24px;height:24px;padding:0;display:inline-flex;align-items:center;justify-content:center;font-size:11px;line-height:1;filter:brightness(1.2)}
+#gear{font-size:11px}#zoomGear{font-size:11px;font-weight:800;letter-spacing:-.5px}
+.wl{display:flex;align-items:center;gap:6px;font-size:14px;font-weight:500;white-space:nowrap;margin-top:2px}#wr{width:18px;height:18px;font-size:11px;transform:translateY(-4px)}
 #wu{font-size:11px;color:#ffffff8c;margin-top:1px}
 @keyframes sp{to{transform:rotate(360deg)}}.spin{animation:sp .8s linear infinite}
 
@@ -117,9 +117,9 @@ table.tk{table-layout:fixed;font-size:12px}table.tk td,table.tk th{padding:6px 3
 body[data-role=viewer] [data-a=tkbedit]{display:none}
 html[data-skin=sunflower] #hb{background-color:#4A3310;background-image:linear-gradient(90deg,rgba(38,26,8,.80) 0%,rgba(60,40,10,.52) 55%,rgba(60,40,10,.22) 100%),url("https://images.unsplash.com/photo-1548291616-bfccc8db731d?fm=jpg&q=50&w=900&auto=format&fit=crop&ixlib=rb-4.1.0");background-size:cover;background-position:center 62%;text-shadow:0 1px 3px rgba(0,0,0,.5)}
 
-#headerPanel{position:relative;isolation:isolate;overflow:hidden;max-width:640px;margin:0 auto;background:var(--hp);border-radius:16px;box-shadow:0 2px 8px #0003}
-#hb{position:relative;display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"tm gr" "dt dt" "wx wu";align-items:center;gap:3px 10px;padding:10px 14px;background:transparent;border-radius:0;box-shadow:none}
-header h1.greeting{position:relative;z-index:2;display:flex;align-items:baseline;gap:8px;width:auto;max-width:none;box-sizing:border-box;margin:0 10px 10px;padding:7px 11px;border-radius:12px;background:#ffffff18;color:#fff;box-shadow:inset 0 1px #ffffff26;font-size:15px;line-height:1.2;white-space:nowrap;overflow:hidden}
+#headerPanel{position:relative;isolation:isolate;overflow:hidden;max-width:640px;margin:0 auto;padding:7px;box-sizing:border-box;background:var(--hp);border-radius:16px;box-shadow:0 2px 8px #0003}
+#hb{position:relative;display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"tm gr" "dt dt" "wx wu";align-items:center;gap:3px 10px;padding:10px 14px;background:#06172e88;border-radius:12px;box-shadow:inset 0 1px #ffffff20}
+header h1.greeting{position:relative;z-index:2;display:flex;align-items:baseline;gap:8px;width:auto;max-width:none;box-sizing:border-box;margin:6px 0 0;padding:7px 11px;border-radius:12px;background:#06172e88;color:#fff;box-shadow:inset 0 1px #ffffff20;font-size:15px;line-height:1.2;white-space:nowrap;overflow:hidden}
 header h1.greeting small{font-size:11px;font-weight:400;color:#ffffffa8;overflow:hidden;text-overflow:ellipsis}
 #hb .tl,#hb .tr{display:contents}
 #tm{grid-area:tm;font-size:28px}.header-tools{position:absolute;z-index:6;top:10px;right:12px;display:flex;align-items:center;gap:6px}.header-tools #gear,.header-tools #zoomGear{grid-area:auto;justify-self:auto}
@@ -149,11 +149,11 @@ html[data-skin=chelsea] body{font-family:"Avenir Next","Trebuchet MS",-apple-sys
 html[data-skin=chelsea] .pill.w{background:#3A2E18}html[data-skin=chelsea] .pill.o{background:#153d3d}
 html[data-skin=chelsea] #headerPanel{border:1px solid #568bd1;box-shadow:0 0 0 2px #60a8ff20,0 5px 18px #0009,inset 0 1px #dcecff33}
 html[data-skin=chelsea] #headerPanel::before{content:"";position:absolute;inset:0;z-index:0;pointer-events:none;background:url(assets/chelsea-banner.jpg) center 55%/cover no-repeat;opacity:.94;filter:brightness(.9) contrast(1.08) saturate(.95);-webkit-mask-image:linear-gradient(90deg,transparent 0%,rgba(0,0,0,.05) 18%,rgba(0,0,0,.32) 42%,rgba(0,0,0,.78) 66%,#000 82%);mask-image:linear-gradient(90deg,transparent 0%,rgba(0,0,0,.05) 18%,rgba(0,0,0,.32) 42%,rgba(0,0,0,.78) 66%,#000 82%)}
-html[data-skin=chelsea] #hb{background:transparent;box-shadow:none}
+html[data-skin=chelsea] #hb{background:#06172e88;box-shadow:inset 0 1px #ffffff20}
 html[data-skin=chelsea] #hb>*{position:relative;z-index:2}
 html[data-skin=chelsea] #tm{font-weight:800;letter-spacing:.8px;color:#f2f7ff;text-shadow:0 0 8px #66aaff99,0 2px #031128}
 html[data-skin=chelsea] #dt,html[data-skin=chelsea] #wu{color:#c4d8f5;text-shadow:0 1px 3px #031128cc}html[data-skin=chelsea] .wl{color:#f1d77c;text-shadow:0 1px 3px #031128cc}
-html[data-skin=chelsea] #gear,html[data-skin=chelsea] #zoomGear,html[data-skin=chelsea] #wr{border:0!important;background:transparent!important;color:#fff!important;box-shadow:none!important;text-shadow:0 0 7px #53b6ff,0 1px 2px #00132d;font-size:14px;width:24px;height:24px;opacity:1;visibility:visible;filter:brightness(1.55) saturate(1.2)}html[data-skin=chelsea] #zoomGear{font-size:11px;font-weight:900}html[data-skin=chelsea] #wr{width:20px;height:20px;font-size:12px}html[data-skin=chelsea] .header-tools{gap:5px;z-index:6}
+html[data-skin=chelsea] #gear,html[data-skin=chelsea] #zoomGear,html[data-skin=chelsea] #wr{border:0!important;background:transparent!important;color:#fff!important;box-shadow:none!important;text-shadow:0 0 7px #53b6ff,0 1px 2px #00132d;font-size:11px;width:24px;height:24px;opacity:1;visibility:visible;filter:brightness(1.55) saturate(1.2)}html[data-skin=chelsea] #gear{font-size:11px}html[data-skin=chelsea] #zoomGear{font-size:11px;font-weight:900}html[data-skin=chelsea] #wr{width:18px;height:18px;font-size:11px;transform:translateY(-4px)}html[data-skin=chelsea] .header-tools{gap:5px;z-index:6}
 html[data-skin=chelsea] .cd{border-color:#294b7c;box-shadow:0 3px 13px #0006}
 html[data-skin=chelsea] .cd.hl{border-color:#d9c17a99}
 html[data-skin=chelsea] .hero{background-image:linear-gradient(125deg,#0d326a,#10264a 58%,#17375f);border:1px solid #568bd1}
@@ -220,7 +220,7 @@ import {initializeApp} from "https://www.gstatic.com/firebasejs/10.12.2/firebase
 import {initializeAuth,GoogleAuthProvider,signInWithPopup,signOut,onAuthStateChanged,browserLocalPersistence,indexedDBLocalPersistence,browserPopupRedirectResolver} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import {getFirestore,collection,doc,addDoc,setDoc,updateDoc,deleteDoc,onSnapshot,query,where,getDocs,serverTimestamp,Timestamp,writeBatch} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 const app=initializeApp(FB),auth=initializeAuth(app,{persistence:[indexedDBLocalPersistence,browserLocalPersistence]}),db=getFirestore(app);
-const APP_VER='1.10.26',APP_BUILD='16/11/2026 15:44';
+const APP_VER='1.10.27',APP_BUILD='16/11/2026 15:57';
 let swRegistration=null,appUpdateAvailable='',appUpdateStatus='';
 const $=s=>document.querySelector(s),esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const verCmp=(a,b)=>{const x=String(a).split('.').map(Number),y=String(b).split('.').map(Number);for(let i=0;i<Math.max(x.length,y.length);i++){const d=(x[i]||0)-(y[i]||0);if(d)return Math.sign(d)}return 0};
