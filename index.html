@@ -184,7 +184,7 @@ import {initializeAuth,GoogleAuthProvider,signInWithPopup,signOut,onAuthStateCha
 import {initializeFirestore,persistentLocalCache,persistentMultipleTabManager,getFirestore,collection,doc,addDoc,setDoc,updateDoc,deleteDoc,onSnapshot,query,where,getDocs,serverTimestamp} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 const app=initializeApp(FB),auth=initializeAuth(app,{persistence:[indexedDBLocalPersistence,browserLocalPersistence]});let db;try{db=initializeFirestore(app,{localCache:persistentLocalCache({tabManager:persistentMultipleTabManager()})})}catch(e){db=getFirestore(app)}
 try{navigator.storage?.persist?.()}catch(e){}
-const APP_VER='1.10.7',APP_BUILD='16/11/2026 12:23';
+const APP_VER='1.10.8',APP_BUILD='16/11/2026 12:31';
 let swRegistration=null,appUpdateAvailable='',appUpdateStatus='';
 const $=s=>document.querySelector(s),esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const verCmp=(a,b)=>{const x=String(a).split('.').map(Number),y=String(b).split('.').map(Number);for(let i=0;i<Math.max(x.length,y.length);i++){const d=(x[i]||0)-(y[i]||0);if(d)return Math.sign(d)}return 0};
@@ -291,10 +291,13 @@ document.addEventListener('visibilitychange',()=>{if(!document.hidden&&!navOff)n
 document.addEventListener('touchstart',e=>{const t=e.touches[0];if(e.touches.length!==1||(e.target.closest&&e.target.closest('input,textarea,select,.md'))){ts=null;return}ts={x:t.clientX,y:t.clientY,id:t.identifier,t:Date.now()}},{passive:true,capture:true});
 document.addEventListener('touchend',e=>{if(!ts||!e.changedTouches.length){ts=null;return}const t=e.changedTouches[0];if(t.identifier!==ts.id){ts=null;return}const dx=t.clientX-ts.x,dy=t.clientY-ts.y,dt=Date.now()-ts.t;ts=null;const ax=Math.abs(dx),ay=Math.abs(dy);
  if(ay>=48&&ay>ax*1.2){if(dy>0)navShow();else navHide()}
- else if((ax>=44||(ax>=26&&dt<280))&&ax>ay*1.4&&e.target.closest&&e.target.closest('main,nav')&&!hscroll(e.target))swipeTab(dx<0?1:-1)},{passive:true,capture:true});
+ else if((ax>=44||(ax>=26&&dt<280))&&ax>ay*1.4&&e.target.closest&&e.target.closest('main,nav')&&!hscroll(e.target)){if(sel==='all')swipeFamily(dx);else swipeTab(dx<0?1:-1)}},{passive:true,capture:true});
 document.addEventListener('touchcancel',()=>{ts=null},{passive:true,capture:true});
 const hscroll=el=>{const x=el.closest&&el.closest('.tkw,[style*="overflow-x"]');return !!x&&x.scrollWidth>x.clientWidth+2};
 function anim(dir){const m=$('main');if(!m||!dir)return;m.classList.remove('swl','swr');void m.offsetWidth;m.classList.add(dir>0?'swr':'swl')}
+const orderedStudents=()=>[...D.students].sort((a,b)=>{const rank=n=>({'minh hưng':0,'minh ngọc':1}[String(n).trim().toLowerCase()]??2);return rank(a.name)-rank(b.name)||D.students.indexOf(a)-D.students.indexOf(b)});
+function selectFamilyStudent(id,dir){closeFolds();sel=id;lastStu=id;tab='home';render();const m=$('main');if(m)m.scrollTop=0;anim(dir)}
+function swipeFamily(dx){const list=orderedStudents();if(!list.length)return;selectFamilyStudent((dx>0?list[0]:list[list.length-1]).id,dx>0?1:-1)}
 function closeFolds(){Object.keys(OPEN).forEach(k=>delete OPEN[k])}
 function goTab(id,dir){const k=NAV.map(n=>n[0]),cur=sel==='all'?'home':tab;if(sel==='all'&&id!=='home'){const p=D.students.some(x=>x.id===lastStu)?lastStu:D.students[0]?.id;if(!p){alert('Hãy thêm học viên trước.');return}sel=p}
  if(dir==null)dir=Math.sign(k.indexOf(id)-k.indexOf(cur));closeFolds();tab=id;render();const m=$('main');if(m)m.scrollTop=0;anim(dir)}
@@ -350,8 +353,9 @@ function home(){const st=D.students.find(x=>x.id===sel);if(!st)return '';
  const L=[...mc.filter(c=>c.type==='extra').flatMap(c=>sched(c).filter(s=>s.d===dw).map(s=>({c,t:s.t||''}))),...mainPeriods(st.id,dw)].sort((a,b)=>(a.t||'99').localeCompare(b.t||'99'));
  const sb=(c,v,l,cl='')=>{const cur=D.sessions.find(z=>z.id===c.id+'_'+dstr)?.status;return `<button class="${cl}${cur===v?' on':''}" data-a="mark" data-id="${c.id}" data-d="${dstr}" data-s="${v}">${l}</button>`};
  const exL=L.filter(x=>x.c.type==='extra'),mnL=L.filter(x=>x.c.type!=='extra'),todayC=card('Lịch hôm nay · '+DOW[dw],(exL.length?exL.map(x=>row((x.t||'Cả ngày')+' · '+x.c.name,sb(x.c,'present','Đi học')+sb(x.c,'absent','Nghỉ','no')+sb(x.c,'toff','Cô nghỉ','to'),'Học thêm'+(x.c.teacher?' · GV '+x.c.teacher:''))).join(''):empty('Hôm nay không có lịch học thêm.'))+(mnL.length?fold('hm-'+sel,'Lịch học chính khóa ('+mnL.length+' tiết)',mnL.map(x=>row((x.t||'Cả ngày')+' · '+x.c.name,'','Chính khóa'+(x.c.teacher?' · GV '+x.c.teacher:''))).join('')):''));
- const tmM=mainPeriods(st.id,dw2),tmE=ex.flatMap(c=>sched(c).filter(s=>s.d===dw2).map(s=>({c,t:s.t||''})));
- const tom=tmM.length||tmE.length?fold('tom-'+sel,'Ngày mai · '+DOW[dw2]+' ('+(tmM.length+tmE.length)+' mục)',tmM.map(x=>row(x.t+' · '+x.c.name,'','Chính khóa')).join('')+tmE.map(x=>row(x.c.name,esc(x.t),'Học thêm')).join('')):'';
+ const tmM=mainPeriods(st.id,dw2),tmE=[...new Map(ex.filter(c=>sched(c).some(s=>s.d===dw2)).map(c=>[c.id,{c,t:sched(c).find(s=>s.d===dw2)?.t||'99'}])).values()].sort((a,b)=>a.t.localeCompare(b.t));
+ const tomorrowLines=(tmE.length?`<p class="k"><b>Học thêm (${tmE.length} môn):</b> ${tmE.map(x=>esc(x.c.name)).join(' · ')}</p>`:'')+(tmM.length?`<p class="k"><b>Học chính (${tmM.length} tiết):</b> ${tmM.map(x=>esc(x.c.name)).join(' · ')}</p>`:'');
+ const tom=tomorrowLines?card('Ngày mai · '+DOW[dw2],tomorrowLines):'';
  const fe=ex.filter(c=>c.billing&&c.billing!=='none').map(c=>{const y=cyc(c),N=attN(c);return {c,y,N,acc:c.billing==='session'?N*(+c.rate||0):y?N*y.unit:+c.price||0,pd:paid(c.id)}});
  const feeC=fe.length?card('Học phí môn học thêm (đến hiện tại)',fe.map(x=>row(x.c.name,vnd(x.acc),x.y?`Khóa ${x.y.done+1}: ${x.y.cur}/${x.y.S} buổi · đã đóng ${vnd(x.pd)}${x.y.cur>0&&x.y.S-x.y.cur<=3?' · sắp hết khóa':''}`:x.c.billing==='session'?`${x.N} buổi × ${vnd(x.c.rate)} · đã đóng ${vnd(x.pd)}`:`Trọn khóa · đã đóng ${vnd(x.pd)}`)).join('')+row('Tổng tạm tính đến nay',vnd(fe.reduce((a,x)=>a+x.acc,0)),'Chi tiết và ghi đóng tiền ở tab Tiền')):'';
  const srt=[...S].sort((a,b)=>b.s.tb-a.s.tb),low=[...srt].reverse().filter(x=>x.s.tb<6.5).slice(0,3),nts=[];
@@ -476,7 +480,7 @@ function render(){const A=$('#app');
  if(!sid)return A.innerHTML=`<main class="c"><h1>Tạo không gian chung</h1><p>Nhập email Google của người cùng quản lý để hai người xem và nhập chung một sổ.</p><button class="p" data-a="setup">Bắt đầu</button> <button data-a="out">Đăng xuất</button></main>`;
  const i=D.students.findIndex(s=>s.id===sel),st=D.students[i],home_=sel==='all'||!st;
  document.documentElement.style.setProperty('--c',home_?neu():col(i));document.body.dataset.role=isAdmin()?'admin':'viewer';
- const studentTabs=[...D.students].sort((a,b)=>{const rank=n=>({'minh hưng':0,'minh ngọc':1}[String(n).trim().toLowerCase()]??2);return rank(a.name)-rank(b.name)||D.students.indexOf(a)-D.students.indexOf(b)});
+  const studentTabs=orderedStudents();
  const tabs=`<div class="tb"><button class="${home_?'on':''}" style="--c:${neu()}" data-a="stu" data-id="all">Family</button>${studentTabs.map(s=>`<button class="${s.id===sel?'on':''}" style="--c:${col(D.students.indexOf(s))}" data-a="stu" data-id="${s.id}">${esc(s.name)}</button>`).join('')}<button data-a="add" data-c="students" aria-label="Thêm học viên">+</button></div>`;
  const body=home_?all():VIEW[tab]();
  const sy=$('main')?.scrollTop||0;A.innerHTML=header()+(appUpdateAvailable ? `<section class="cd" style="margin:10px 12px"><h2>Có bản cập nhật KidTrack ${esc(appUpdateAvailable)}</h2><button class="p" data-a="updateNow">Cập nhật ngay</button> <button data-a="updateLater">Để sau</button></section>` : "")+`<main>${tabs}${body}</main>`+(`<nav>${NAV.map(n=>`<button class="${(home_?'home':tab)===n[0]?'on':''}" data-a="tab" data-id="${n[0]}">${svg(n[0])}${n[1]}</button>`).join('')}</nav>`);
