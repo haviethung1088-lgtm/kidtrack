@@ -176,6 +176,33 @@ body[data-role=viewer] [data-a=delstu]{display:none}
 
 .fold{margin-top:8px}.fh{display:block;width:100%;text-align:left;border:0;background:color-mix(in srgb,var(--c) 9%,transparent);color:var(--ink);border-radius:10px;padding:9px 11px;font-weight:500;font-size:13.5px}.fh span{display:inline-block;width:14px;color:var(--c)}.fb{margin-top:4px}
 body[data-role=viewer] [data-a=addc]{display:none}
+/* Desktop layout: persistent side navigation and a wider, centered workspace. */
+@media (min-width: 900px) and (pointer: fine){
+  header{padding:18px 28px 12px;margin-left:248px}
+  #hb,header h1,header .sub{max-width:1320px}
+  #hb{padding:16px 20px;grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"tm gr" "dt dt" "wx wu"}
+  #tm{font-size:34px}
+  #app>main{width:auto;max-width:1380px;margin:0 24px 0 272px;padding:0 24px 32px;zoom:1;touch-action:auto}
+  .tb{top:0;padding:12px 0 10px;margin-bottom:10px;z-index:6}
+  nav{left:16px;right:auto;top:50%;bottom:auto;transform:translateY(-50%);width:208px;max-width:none;min-height:0;flex-direction:column;align-items:stretch;gap:5px;padding:10px;border-radius:20px}
+  nav button{min-height:48px;flex:0 0 auto;flex-direction:row;justify-content:flex-start;gap:12px;padding:8px 13px;border-radius:13px;font-size:14px;text-align:left}
+  nav button svg{width:20px;height:20px;flex:0 0 20px}
+  nav.nav-hiding{transform:translate(-125%,-50%)}
+  .cd{padding:8px 20px 16px;margin-bottom:16px;border-radius:18px}
+  .cd h2{font-size:15px;margin:14px 0 5px}
+  .r{padding:12px 2px}
+  .hero{padding:20px 24px;margin:8px 0 16px}
+  .hero strong{font-size:36px}
+  .sc{max-width:520px;padding:20px 24px}
+  .md{align-items:center;padding:24px}
+  .md form,.md .box{max-width:680px;border-radius:18px;padding:24px}
+  .md .box.rbox{max-width:min(1100px,94vw);max-height:90vh;padding:20px}
+  .md input,.md select{font-size:15px}
+  .out{margin:24px auto}
+}
+@media (min-width: 1500px) and (pointer: fine){
+  #app>main{max-width:1560px;margin-right:auto}
+}
 </style></head><body><div id="app"><div class="ld"><img src="icon-192.png" alt=""><b>KidTrack</b></div></div>
 <script type="module">
 /* ==== DÁN CẤU HÌNH FIREBASE CỦA ANH VÀO ĐÂY (Project settings > Your apps > Web) ==== */
@@ -185,7 +212,7 @@ import {initializeApp} from "https://www.gstatic.com/firebasejs/10.12.2/firebase
 import {initializeAuth,GoogleAuthProvider,signInWithPopup,signOut,onAuthStateChanged,browserLocalPersistence,indexedDBLocalPersistence,browserPopupRedirectResolver} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import {getFirestore,collection,doc,addDoc,setDoc,updateDoc,deleteDoc,onSnapshot,query,where,getDocs,serverTimestamp,Timestamp,writeBatch} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 const app=initializeApp(FB),auth=initializeAuth(app,{persistence:[indexedDBLocalPersistence,browserLocalPersistence]}),db=getFirestore(app);
-const APP_VER='1.10.13',APP_BUILD='16/11/2026 13:03';
+const APP_VER='1.10.14',APP_BUILD='16/11/2026 14:00';
 let swRegistration=null,appUpdateAvailable='',appUpdateStatus='';
 const $=s=>document.querySelector(s),esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const verCmp=(a,b)=>{const x=String(a).split('.').map(Number),y=String(b).split('.').map(Number);for(let i=0;i<Math.max(x.length,y.length);i++){const d=(x[i]||0)-(y[i]||0);if(d)return Math.sign(d)}return 0};
