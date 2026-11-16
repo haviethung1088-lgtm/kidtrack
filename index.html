@@ -184,7 +184,7 @@ import {initializeAuth,GoogleAuthProvider,signInWithPopup,signOut,onAuthStateCha
 import {initializeFirestore,persistentLocalCache,persistentMultipleTabManager,getFirestore,collection,doc,addDoc,setDoc,updateDoc,deleteDoc,onSnapshot,query,where,getDocs,serverTimestamp} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 const app=initializeApp(FB),auth=initializeAuth(app,{persistence:[indexedDBLocalPersistence,browserLocalPersistence]});let db;try{db=initializeFirestore(app,{localCache:persistentLocalCache({tabManager:persistentMultipleTabManager()})})}catch(e){db=getFirestore(app)}
 try{navigator.storage?.persist?.()}catch(e){}
-const APP_VER='1.10.0',APP_BUILD='16/11/2026 10:53';
+const APP_VER='1.10.1',APP_BUILD='16/11/2026 11:32';
 const $=s=>document.querySelector(s),esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const fm=n=>{const d=String(n??'').replace(/\D/g,'');return d?(+d).toLocaleString('vi-VN'):''},vnd=n=>Math.round(n||0).toLocaleString('vi-VN')+' đ',today=()=>new Date().toLocaleDateString('sv'),fmtD=s=>s?s.split('-').reverse().join('/'):'';
 const DOW=['CN','T2','T3','T4','T5','T6','T7'],COLS=['students','courses','sessions','fees','payments','grades','tkbimgs','tkbs'];
@@ -342,11 +342,12 @@ function home(){const st=D.students.find(x=>x.id===sel);if(!st)return '';
  const avM=gAvg(S.filter(x=>x.r.type!=='extra').map(x=>x.s.tb)),avE=gAvg(S.filter(x=>x.r.type==='extra').map(x=>x.s.tb)),avA=gAvg(S.map(x=>x.s.tb));
  const hero=`<div class="hero"><small>${esc(st.name)}</small>${sinfo(st)?`<span class="hi">${esc(sinfo(st))}</span>`:''}<div class="hst"><span>Chuyên cần tháng này <b>${rate==null?'–':rate+'%'}</b></span><span>Điểm TB <b>${gF(avA)}</b></span></div></div>`;
  const soon=mc.map(c=>({c,y:cyc(c)})).filter(x=>x.y&&x.y.cur>0&&x.y.S-x.y.cur<=3).map(x=>row(x.c.name,'còn '+(x.y.S-x.y.cur)+' buổi',`Khóa ${x.y.done+1}: ${x.y.cur}/${x.y.S} buổi`)).join('');
- const L=mc.flatMap(c=>sched(c).filter(s=>s.d===dw).map(s=>({c,t:s.t||''}))).sort((a,b)=>(a.t||'99').localeCompare(b.t||'99'));
+ const tk=latestTkb(),mainFromTkb=tk?PS.flatMap(([p])=>{const cell=tk.grid?.[dw]?.[p],name=(cell?.s||'').trim();if(!name)return [];const c=mc.find(x=>x.type!=='extra'&&x.name.trim().toLowerCase()===name.toLowerCase())||{name,teacher:cell.t||'',type:'main'};const per=tk.per||PT,[a,b]=per[p]||['',''];return [{c,t:a&&b?a+'-'+b:a||b,p}] }):null;
+ const L=[...mc.filter(c=>c.type==='extra').flatMap(c=>sched(c).filter(s=>s.d===dw).map(s=>({c,t:s.t||''}))),...(mainFromTkb||mc.filter(c=>c.type!=='extra').flatMap(c=>sched(c).filter(s=>s.d===dw).map(s=>({c,t:s.t||''}))))].sort((a,b)=>(a.t||'99').localeCompare(b.t||'99'));
  const sb=(c,v,l,cl='')=>{const cur=D.sessions.find(z=>z.id===c.id+'_'+dstr)?.status;return `<button class="${cl}${cur===v?' on':''}" data-a="mark" data-id="${c.id}" data-d="${dstr}" data-s="${v}">${l}</button>`};
  const exL=L.filter(x=>x.c.type==='extra'),mnL=L.filter(x=>x.c.type!=='extra'),todayC=card('Lịch hôm nay · '+DOW[dw],(exL.length?exL.map(x=>row((x.t||'Cả ngày')+' · '+x.c.name,sb(x.c,'present','Đi học')+sb(x.c,'absent','Nghỉ','no')+sb(x.c,'toff','Cô nghỉ','to'),'Học thêm'+(x.c.teacher?' · GV '+x.c.teacher:''))).join(''):empty('Hôm nay không có lịch học thêm.'))+(mnL.length?fold('hm-'+sel,'Lịch học chính khóa ('+mnL.length+' tiết)',mnL.map(x=>row((x.t||'Cả ngày')+' · '+x.c.name,'','Chính khóa'+(x.c.teacher?' · GV '+x.c.teacher:''))).join('')):''));
- const tk=latestTkb(),tmM=tk&&dw2>=1&&dw2<=5?(()=>{const l=[];PS.forEach(([p])=>{const nm=tk.grid?.[dw2]?.[p]?.s;if(nm&&l[l.length-1]!==nm)l.push(nm)});return l})():[],tmE=ex.flatMap(c=>sched(c).filter(s=>s.d===dw2).map(s=>({c,t:s.t||''})));
- const tom=tmM.length||tmE.length?card('Ngày mai · '+DOW[dw2],(tmM.length?row('Chính khóa','',tmM.join(' · ')):'')+tmE.map(x=>row(x.c.name,esc(x.t),'Học thêm')).join('')):'';
+ const tmM=tk&&dw2>=1&&dw2<=5?PS.flatMap(([p])=>{const cell=tk.grid?.[dw2]?.[p],name=(cell?.s||'').trim();if(!name)return [];const per=tk.per||PT,[a,b]=per[p]||['',''];return [{name,t:a&&b?a+'-'+b:a||b}]}):[],tmE=ex.flatMap(c=>sched(c).filter(s=>s.d===dw2).map(s=>({c,t:s.t||''})));
+ const tom=tmM.length||tmE.length?card('Ngày mai · '+DOW[dw2],tmM.map(x=>row(x.t+' · '+x.name,'','Chính khóa')).join('')+tmE.map(x=>row(x.c.name,esc(x.t),'Học thêm')).join('')):'';
  const fe=ex.filter(c=>c.billing&&c.billing!=='none').map(c=>{const y=cyc(c),N=attN(c);return {c,y,N,acc:c.billing==='session'?N*(+c.rate||0):y?N*y.unit:+c.price||0,pd:paid(c.id)}});
  const feeC=fe.length?card('Học phí môn học thêm (đến hiện tại)',fe.map(x=>row(x.c.name,vnd(x.acc),x.y?`Khóa ${x.y.done+1}: ${x.y.cur}/${x.y.S} buổi · đã đóng ${vnd(x.pd)}${x.y.cur>0&&x.y.S-x.y.cur<=3?' · sắp hết khóa':''}`:x.c.billing==='session'?`${x.N} buổi × ${vnd(x.c.rate)} · đã đóng ${vnd(x.pd)}`:`Trọn khóa · đã đóng ${vnd(x.pd)}`)).join('')+row('Tổng tạm tính đến nay',vnd(fe.reduce((a,x)=>a+x.acc,0)),'Chi tiết và ghi đóng tiền ở tab Tiền')):'';
  const srt=[...S].sort((a,b)=>b.s.tb-a.s.tb),low=[...srt].reverse().filter(x=>x.s.tb<6.5).slice(0,3),nts=[];
@@ -443,7 +444,7 @@ function tkb(){const t=latestTkb(),ex=[1,2,3,4,5,6,0].map(d=>{const l=mine('cour
 async function tkbApply(grid,per){const subj={};
  TD.forEach(d=>{PS.map(([p])=>({p,c:grid[d]?.[p]})).filter(x=>x.c&&x.c.s).forEach(x=>{const [a,b]=per[x.p]||['',''],k=x.c.s.trim().toLowerCase(),o=subj[k]??={name:x.c.s.trim(),t:'',slots:[]};if(x.c.t&&!o.t)o.t=x.c.t.trim();
   o.slots.push({d,a,b,p})})});
- const days=sl=>sl.filter(s=>s.a).map(s=>'T'+(s.d+1)+' tiết '+s.p[1]+' '+s.a+(s.b?'-'+s.b:'')).join(', '),mains=mine('courses').filter(c=>c.type!=='extra'),used=new Set();
+ const days=sl=>sl.filter(s=>s.a).map(s=>'T'+(s.d+1)+' '+s.a+(s.b?'-'+s.b:'')).join(', '),mains=mine('courses').filter(c=>c.type!=='extra'),used=new Set();
  for(const k in subj){const o=subj[k],ex=mains.find(c=>c.name.trim().toLowerCase()===k),data={days:days(o.slots),teacher:o.t||ex?.teacher||'',type:'main',billing:'none'};if(ex){used.add(ex.id);await updateDoc(ref('courses',ex.id),data)}else await add('courses',{...data,name:o.name,studentId:sel})}
  for(const c of mains)if(!used.has(c.id)&&c.days)await updateDoc(ref('courses',c.id),{days:''});
  await add('tkbs',{studentId:sel,from:today(),per,grid})}
