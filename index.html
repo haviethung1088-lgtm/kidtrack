@@ -184,7 +184,7 @@ import {initializeAuth,GoogleAuthProvider,signInWithPopup,signOut,onAuthStateCha
 import {initializeFirestore,persistentLocalCache,persistentMultipleTabManager,getFirestore,collection,doc,addDoc,setDoc,updateDoc,deleteDoc,onSnapshot,query,where,getDocs,serverTimestamp} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 const app=initializeApp(FB),auth=initializeAuth(app,{persistence:[indexedDBLocalPersistence,browserLocalPersistence]});let db;try{db=initializeFirestore(app,{localCache:persistentLocalCache({tabManager:persistentMultipleTabManager()})})}catch(e){db=getFirestore(app)}
 try{navigator.storage?.persist?.()}catch(e){}
-const APP_VER='1.10.3',APP_BUILD='16/11/2026 11:43';
+const APP_VER='1.10.4',APP_BUILD='16/11/2026 11:48';
 const $=s=>document.querySelector(s),esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const fm=n=>{const d=String(n??'').replace(/\D/g,'');return d?(+d).toLocaleString('vi-VN'):''},vnd=n=>Math.round(n||0).toLocaleString('vi-VN')+' đ',today=()=>new Date().toLocaleDateString('sv'),fmtD=s=>s?s.split('-').reverse().join('/'):'';
 const DOW=['CN','T2','T3','T4','T5','T6','T7'],COLS=['students','courses','sessions','fees','payments','grades','tkbimgs','tkbs'];
@@ -430,17 +430,19 @@ function scoreChart(){const R=gRows(mine('courses')),P=[...mine('grades')].filte
 const TD=[1,2,3,4,5],PS=[['S1','Sáng · Tiết 1'],['S2','Sáng · Tiết 2'],['S3','Sáng · Tiết 3'],['S4','Sáng · Tiết 4'],['S5','Sáng · Tiết 5'],['C1','Chiều · Tiết 1'],['C2','Chiều · Tiết 2'],['C3','Chiều · Tiết 3'],['C4','Chiều · Tiết 4']],
  PT={S1:['07:30','08:15'],S2:['08:20','09:05'],S3:['09:20','10:05'],S4:['10:10','10:55'],S5:['11:00','11:45'],C1:['14:00','14:45'],C2:['14:50','15:35'],C3:['15:50','16:35'],C4:['16:40','17:25']},
  pl=p=>(p[0]==='S'?'Sáng ':'Chiều ')+p[1],
- latestTkb=()=>[...mine('tkbs')].sort((a,b)=>(b.from||'').localeCompare(a.from||'')||((b.createdAt?.seconds||9e9)-(a.createdAt?.seconds||9e9)))[0];
-const latestTkbFor=id=>[...D.tkbs].filter(x=>x.studentId===id).sort((a,b)=>(b.from||'').localeCompare(a.from||'')||((b.createdAt?.seconds||9e9)-(a.createdAt?.seconds||9e9)))[0];
-function mainPeriods(studentId,day){const t=latestTkbFor(studentId),courses=D.courses.filter(c=>c.studentId===studentId&&c.type!=='extra');
- if(t)return PS.flatMap(([p])=>{const cell=t.grid?.[day]?.[p],name=(cell?.s||'').trim();if(!name)return [];const c=courses.find(x=>x.name.trim().toLowerCase()===name.toLowerCase())||{name,teacher:cell.t||'',type:'main'};const [a,b]=(t.per||PT)[p]||['',''];return [{c,t:a&&b?a+'-'+b:a||b,p}]});
- return courses.flatMap(c=>sched(c).filter(x=>x.d===day).map(x=>({c,t:x.t||''})))}
+ tkbOrder=(a,b)=>(b.from||'').localeCompare(a.from||'')||((b.updatedAt?.seconds||b.createdAt?.seconds||0)-(a.updatedAt?.seconds||a.createdAt?.seconds||0))||String(b.id||'').localeCompare(String(a.id||'')),
+ latestTkb=()=>[...mine('tkbs')].sort(tkbOrder)[0];
+const latestTkbFor=id=>[...D.tkbs].filter(x=>x.studentId===id).sort(tkbOrder)[0];
+function mainPeriods(studentId,day){const t=latestTkbFor(studentId),courses=D.courses.filter(c=>c.studentId===studentId&&c.type!=='extra'),per=t?.per||PT,out=[],seen=new Set(),minute=s=>{const m=String(s||'').match(/^(\d{1,2}):(\d{2})$/);return m?+m[1]*60+(+m[2]):null},add=(c,time,p)=>{const key=p||c.id+'|'+time;if(seen.has(key))return;seen.add(key);out.push({c,t:time||'',p})};
+ if(t)PS.forEach(([p])=>{const cell=t.grid?.[day]?.[p],name=(cell?.s||'').trim();if(!name)return;const c=courses.find(x=>x.name.trim().toLowerCase()===name.toLowerCase())||{name,teacher:cell.t||'',type:'main'};const [a,b]=per[p]||['',''];add(c,a&&b?a+'-'+b:a||b,p)});
+ courses.forEach(c=>sched(c).filter(x=>x.d===day).forEach(x=>{const m=(x.t||'').match(/(\d{1,2}:\d{2})\s*-\s*(\d{1,2}:\d{2})/),from=m?minute(m[1]):null,to=m?minute(m[2]):null;let expanded=0;if(from!=null&&to!=null)PS.forEach(([p])=>{const [a,b]=per[p]||[],start=minute(a),end=minute(b);if(start!=null&&end!=null&&start>=from&&end<=to){add(c,a+'-'+b,p);expanded++}});if(!expanded)add(c,x.t||'',null)}));
+ return out.sort((a,b)=>(a.t||'99').localeCompare(b.t||'99'))}
 const subjHue=n=>{let h=0;for(const ch of String(n).toLowerCase())h=(h*31+ch.charCodeAt(0))>>>0;return [205,18,142,282,45,345,172,92,320,232][h%10]};
 const tkbTable=t=>{if(!t)return empty('Chưa có thời khóa biểu chính khóa. Bấm nút bên dưới để tạo.');const per=t.per||PT,td=new Date().getDay(),rows=PS.filter(([p])=>TD.some(d=>t.grid?.[d]?.[p]?.s));if(!rows.length)return empty('Thời khóa biểu đang trống.');
  const cell=(d,p)=>{const c=t.grid?.[d]?.[p],k=d===td?' class="td"':'';return c&&c.s?`<td${k}><div class="sj" style="--h:${subjHue(c.s)}"><b>${esc(c.s)}</b>${c.t?`<small>${esc(c.t)}</small>`:''}</div></td>`:`<td${k}></td>`};
  let out='',cur='';rows.forEach(([p])=>{if(p[0]!==cur){cur=p[0];out+=`<tr class="ses"><th colspan="${TD.length+1}">${cur==='S'?'Buổi sáng':'Buổi chiều'}</th></tr>`}out+=`<tr><th class="tp1">Tiết ${p[1]}<small>${per[p]?.[0]||''}${per[p]?.[1]?'–'+per[p][1]:''}</small></th>${TD.map(d=>cell(d,p)).join('')}</tr>`});
  return `<div class="tkw"><table class="tk"><tr><th></th>${TD.map(d=>`<th${d===td?' class="td"':''}>${DOW[d]}${d===td?'<small>Hôm nay</small>':''}</th>`).join('')}</tr>${out}</table></div>`};
-const tkbPayload=()=>{const o={};D.students.forEach(s=>{const t=[...D.tkbs.filter(x=>x.studentId===s.id)].sort((a,b)=>(b.from||'').localeCompare(a.from||'')||((b.createdAt?.seconds||9e9)-(a.createdAt?.seconds||9e9)))[0];if(!t)return;const g={};TD.forEach(d=>{const l=[];PS.forEach(([p])=>{const n=t.grid?.[d]?.[p]?.s;if(n&&l[l.length-1]!==n)l.push(n)});if(l.length)g[d]=l});if(Object.keys(g).length)o[s.name]=g});return o};
+const tkbPayload=()=>{const o={};D.students.forEach(s=>{const t=latestTkbFor(s.id);if(!t)return;const g={};TD.forEach(d=>{const l=[];PS.forEach(([p])=>{const n=t.grid?.[d]?.[p]?.s;if(n&&l[l.length-1]!==n)l.push(n)});if(l.length)g[d]=l});if(Object.keys(g).length)o[s.name]=g});return o};
 function tkb(){const t=latestTkb(),ex=[1,2,3,4,5,6,0].map(d=>{const l=mine('courses').filter(c=>c.type==='extra').flatMap(c=>sched(c).filter(s=>s.d===d).map(s=>({t:s.t||'',c}))).sort((a,b)=>(a.t||'99').localeCompare(b.t||'99')).map(x=>row(x.c.name,esc(x.t),x.c.teacher?'GV: '+x.c.teacher:'Học thêm')).join('');return l?`<p class="k"><b>${DOW[d]}</b></p>${l}`:''}).join('');
  const im=mine('tkbimgs').sort((a,b)=>(b.date||'').localeCompare(a.date||'')).map((x,i)=>`<div class="r"><div><b>${i?'Bản cũ':'Bản mới nhất'} · áp dụng từ ${fmtD(x.date)}</b>${x.note?`<small>${esc(x.note)}</small>`:''}<div class="th"><img src="${x.img}" data-a="img" alt="Thời khóa biểu" style="width:128px;height:96px"></div></div><div class="am">${btn('del','tkbimgs',x.id,'Xóa')}</div></div>`).join('');
  return card('Thời khóa biểu chính khóa'+(t?' · từ '+fmtD(t.from):''),tkbTable(t)+addb(t?'Tạo TKB mới / sửa TKB':'Tạo thời khóa biểu','tkbedit','')).replace('class="cd"','class="cd hl"')+card('Lịch học thêm trong tuần',ex||empty('Chưa có lịch học thêm.'))+card('Ảnh thời khóa biểu',(im||empty('Chưa có ảnh. Khi nhà trường đổi TKB, chụp ảnh tải lên đây để lưu lại, rồi tạo TKB mới ở trên.'))+addb('Tải ảnh thời khóa biểu mới','tkbadd',''))}
@@ -450,7 +452,7 @@ async function tkbApply(grid,per){const subj={};
  const days=sl=>sl.filter(s=>s.a).map(s=>'T'+(s.d+1)+' '+s.a+(s.b?'-'+s.b:'')).join(', '),mains=mine('courses').filter(c=>c.type!=='extra'),used=new Set();
  for(const k in subj){const o=subj[k],ex=mains.find(c=>c.name.trim().toLowerCase()===k),data={days:days(o.slots),teacher:o.t||ex?.teacher||'',type:'main',billing:'none'};if(ex){used.add(ex.id);await updateDoc(ref('courses',ex.id),data)}else await add('courses',{...data,name:o.name,studentId:sel})}
  for(const c of mains)if(!used.has(c.id)&&c.days)await updateDoc(ref('courses',c.id),{days:''});
- await add('tkbs',{studentId:sel,from:today(),per,grid})}
+ await add('tkbs',{studentId:sel,from:today(),per,grid,createdAt:serverTimestamp()})}
 function tkbEdit(){const cur=latestTkb(),per=JSON.parse(JSON.stringify(cur?.per||PT)),grid=JSON.parse(JSON.stringify(cur?.grid||{}));let day=1;const m=document.createElement('div');m.className='md';m.id='tke';
  const toMin=s=>{const [h,n]=String(s||'').split(':').map(Number);return Number.isFinite(h)&&Number.isFinite(n)?h*60+n:0},clock=n=>String(Math.floor(n/60)%24).padStart(2,'0')+':'+String(n%60).padStart(2,'0'),autoStarts={S:per.S1?.[0]||PT.S1[0],C:per.C1?.[0]||PT.C1[0]},autoPer=()=>{const ix={S:0,C:0},o={};PS.forEach(([p])=>{const q=p[0],a=toMin(autoStarts[q])+ix[q]*45;o[p]=[clock(a),clock(a+45)];ix[q]++});return o},samePer=(a,b)=>PS.every(([p])=>a[p]?.[0]===b[p]?.[0]&&a[p]?.[1]===b[p]?.[1]);
  let customTimes=!!cur&&!samePer(per,autoPer());
