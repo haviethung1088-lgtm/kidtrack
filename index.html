@@ -21,12 +21,12 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid 
 .tb{position:sticky;top:0;z-index:5;display:flex;gap:6px;overflow-x:auto;background:var(--bg);padding:10px 0 8px;margin-bottom:6px}
 .tb button{border-radius:99px;padding:8px 18px;color:var(--mut);white-space:nowrap;font-weight:500}
 .tb button.on{background:var(--c);border-color:var(--c);color:#fff}
-.tb button[data-stu-drag]{cursor:grab;user-select:none}.tb .stu-grip{display:inline-block;margin-right:5px;opacity:.55;touch-action:none;user-select:none;cursor:grab}.tb .stu-gender{display:inline-flex;margin-left:5px;vertical-align:-1px;font-size:14px;line-height:1}.tb button.stu-dragging{opacity:.65;transform:scale(1.06);box-shadow:0 8px 20px #0005;z-index:6}.tb button.stu-drop-target{outline:2px solid var(--c);outline-offset:2px}
+.tb button[data-stu-drag]{cursor:grab;user-select:none}.tb .stu-grip{display:inline-block;margin-right:5px;opacity:.55;touch-action:none;user-select:none;cursor:grab}.tb .stu-gender{display:inline-block;width:26px;height:26px;margin-left:5px;vertical-align:-8px;object-fit:contain}.tb button.stu-dragging{opacity:.65;transform:scale(1.06);box-shadow:0 8px 20px #0005;z-index:6}.tb button.stu-drop-target{outline:2px solid var(--c);outline-offset:2px}
 @media (pointer:coarse){.tb button[data-stu-drag]{touch-action:none}}
 .hero{background:var(--c);color:#fff;border-radius:18px;padding:18px 20px;margin:4px 0 14px}
 .hero small{font-size:15px;font-weight:500}.hero p{margin:12px 0 0;opacity:.8;font-size:13px}
 .hero strong{display:block;font-size:34px;line-height:1.2;font-variant-numeric:tabular-nums}
-.birthday-banner{display:flex;align-items:center;gap:11px;padding:10px 13px;margin:0 0 14px;border:1px solid #f2b5ce;border-radius:14px;background:linear-gradient(110deg,#ffe7f0,#fff7fa);color:#7c2445;box-shadow:0 3px 12px #c7467820}.birthday-icon{display:grid;place-items:center;width:40px;height:40px;flex:0 0 40px;border-radius:50%;background:#ed4190;color:#fff;font-size:20px}.birthday-copy{min-width:0}.birthday-heading{font-weight:800}.birthday-names{display:flex;flex-wrap:wrap;gap:6px 10px;margin-top:2px}.birthday-person{display:inline-flex;align-items:center;gap:5px;font-weight:700}.birthday-person .stu-gender{font-size:16px}
+.birthday-banner{display:flex;align-items:center;gap:11px;padding:10px 13px;margin:0 0 14px;border:1px solid #f2b5ce;border-radius:14px;background:linear-gradient(110deg,#ffe7f0,#fff7fa);color:#7c2445;box-shadow:0 3px 12px #c7467820}.birthday-icon{display:grid;place-items:center;width:40px;height:40px;flex:0 0 40px;border-radius:50%;background:#ed4190;color:#fff;font-size:20px}.birthday-copy{min-width:0}.birthday-heading{font-weight:800}.birthday-names{display:flex;flex-wrap:wrap;gap:6px 10px;margin-top:2px}.birthday-person{display:inline-flex;align-items:center;gap:5px;font-weight:700}.birthday-person .stu-gender{width:26px;height:26px;object-fit:contain}
 .cd{background:var(--card);border:1px solid var(--ln);border-radius:16px;padding:4px 16px 14px;margin-bottom:14px}
 .cd h2{font-size:14px;margin:14px 0 2px;color:var(--mut);font-weight:500}
 .r{display:flex;justify-content:space-between;gap:12px;padding:12px 0}.r+.r{border-top:1px solid var(--ln)}
@@ -229,7 +229,7 @@ import {initializeApp} from "https://www.gstatic.com/firebasejs/10.12.2/firebase
 import {initializeAuth,GoogleAuthProvider,signInWithPopup,signOut,onAuthStateChanged,browserLocalPersistence,indexedDBLocalPersistence,browserPopupRedirectResolver} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import {getFirestore,collection,doc,addDoc,setDoc,updateDoc,deleteDoc,onSnapshot,query,where,getDocs,serverTimestamp,Timestamp,writeBatch} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 const app=initializeApp(FB),auth=initializeAuth(app,{persistence:[indexedDBLocalPersistence,browserLocalPersistence]}),db=getFirestore(app);
-const APP_VER='1.10.39',APP_BUILD='16/11/2026 20:20';
+const APP_VER='1.10.40',APP_BUILD='16/11/2026 20:30';
 let swRegistration=null,appUpdateAvailable='',appUpdateStatus='';
 const $=s=>document.querySelector(s),esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const verCmp=(a,b)=>{const x=String(a).split('.').map(Number),y=String(b).split('.').map(Number);for(let i=0;i<Math.max(x.length,y.length);i++){const d=(x[i]||0)-(y[i]||0);if(d)return Math.sign(d)}return 0};
@@ -416,7 +416,7 @@ const svg=n=>`<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke
 const duesOf=id=>{const o=sel;sel=id;const r=dues();sel=o;return r},left=it=>it.reduce((a,x)=>a+Math.max(0,x.due-x.paid),0);
 const row=(l,r,sub,x='')=>`<div class="r"><div><b>${esc(l)}</b>${sub?`<small>${esc(sub)}</small>`:''}</div><div class="am">${r}${x}</div></div>`;
 const familyStudentTag=s=>`<span class="fam-stu-tag" style="--stu-color:${col(D.students.findIndex(x=>x.id===s.id))}">${esc(s.name)}</span>`;
-const studentGenderIcon=s=>s.gender==='Nam'?'<span class="stu-gender" role="img" aria-label="Bé trai">👦</span>':s.gender==='Nữ'?'<span class="stu-gender" role="img" aria-label="Bé gái">👧</span>':'';
+const studentGenderIcon=s=>s.gender==='Nam'?'<img class="stu-gender" src="assets/kidtrack-boy-tab.png" alt="Bé trai">':s.gender==='Nữ'?'<img class="stu-gender" src="assets/kidtrack-girl-tab.png" alt="Bé gái">':'';
 const isBirthdayToday=(s,d=today())=>/^\d{4}-\d{2}-\d{2}$/.test(String(s?.dob||''))&&s.dob.slice(5)===d.slice(5),todayBirthdays=()=>orderedStudents().filter(s=>isBirthdayToday(s));
 const birthdayBanner=students=>students.length?`<div class="birthday-banner"><span class="birthday-icon" aria-hidden="true">🎂</span><div class="birthday-copy"><div class="birthday-heading">Hôm nay là sinh nhật của</div><div class="birthday-names">${students.map(s=>`<span class="birthday-person">${studentGenderIcon(s)}${esc(s.name)}</span>`).join('')}</div></div></div>`:'';
 const btn=(a,c,id,t)=>`<button data-a="${a}" data-c="${c}" data-id="${id}">${t}</button>`;
