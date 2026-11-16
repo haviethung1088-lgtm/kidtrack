@@ -1,7 +1,7 @@
 /* KidTrack – Service Worker: offline + Web Push */
-var V = "kidtrack-v44";
+var V = "kidtrack-v45";
 /* Ảnh bài bổ trợ được lưu vào cache khi người dùng mở bài; không tải cả bộ khi cài app. */
-var ASSETS = ["./", "index.html", "firebase-config.js", "push-config.js", "manifest.webmanifest", "icon-192.png", "icon-512.png", "apple-touch-icon.png", "assets/kidtrack-boy-tab.png", "assets/kidtrack-girl-tab.png"];
+var ASSETS = ["./", "index.html", "firebase-config.js", "push-config.js", "manifest.webmanifest", "icon-192.png", "icon-512.png", "apple-touch-icon.png", "assets/kidtrack-boy-tab.png", "assets/kidtrack-girl-tab.png", "assets/kidtrack-home-tab.png"];
 
 self.addEventListener("install", function (e) {
   e.waitUntil(caches.open(V).then(function (c) { return c.addAll(ASSETS); }).catch(function () {}).then(function () { return self.skipWaiting(); }));
