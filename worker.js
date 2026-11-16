@@ -1,4 +1,4 @@
-/* KidTrack – Web Push worker nhắc trước giờ học thêm 1 tiếng.
+/* KidTrack – Web Push nhắc học thêm, TKB ngày mai và sinh nhật học viên.
    Cloudflare bindings: KV (KV namespace); APP_ORIGIN là biến tùy chọn.
    Secret tùy chọn: VAPID_SUB. Cron Trigger: * * * * * (mỗi phút). */
 const TE = new TextEncoder();
@@ -113,6 +113,18 @@ async function run(env, now = Date.now()) {
         if (status >= 200 && status < 300) { r.sent[key] = 1; delete r.attempt[key]; }
       }
     }
+    if (subs[id]) for (const s of r.birthdays || []) {
+      const dob = String(s.dob || "");
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(dob) || dob.slice(5) !== tomorrow.slice(5)) continue;
+      const who = String(s.name || "Học viên").slice(0, 60), key = today + "|BDAY|" + String(s.id || dob + "|" + who).slice(0, 100);
+      if (r.sent[key]) continue;
+      if (r.attempt[key] && now - r.attempt[key] < 3 * 60000) continue;
+      r.attempt[key] = now; dirty = true;
+      let status = 0;
+      try { status = await push(env, r.sub, { title:"Sinh nhật học viên ngày mai", body:"Ngày mai là sinh nhật của " + who + ". Đừng quên gửi lời chúc mừng!", tag:"birthday-" + key, url:"./" }); } catch (_) {}
+      if (status === 404 || status === 410) { delete subs[id]; break; }
+      if (status >= 200 && status < 300) { r.sent[key] = 1; delete r.attempt[key]; }
+    }
   }
   if (dirty) await env.KV.put("subs", JSON.stringify(subs));
 }
@@ -165,7 +177,8 @@ export default {
             weatherLoc = { lat:Math.round(lat * 100) / 100, lon:Math.round(lon * 100) / 100 };
           }
         }
-        subs[id] = { sub:s, days:b.days, tz:Number(b.tz), name:String(b.name || "").slice(0,80), weatherLoc, tkb:(b.tkb && typeof b.tkb === "object" && !Array.isArray(b.tkb)) ? b.tkb : {}, sent:old ? old.sent : {} };
+        const birthdays = Array.isArray(b.birthdays) ? b.birthdays.filter(x => x && /^\d{4}-\d{2}-\d{2}$/.test(String(x.dob || ""))).slice(0,100).map(x => ({ id:String(x.id || "").slice(0,80), name:String(x.name || "Học viên").slice(0,60), dob:String(x.dob) })) : (old && old.birthdays || []);
+        subs[id] = { sub:s, days:b.days, tz:Number(b.tz), name:String(b.name || "").slice(0,80), weatherLoc, tkb:(b.tkb && typeof b.tkb === "object" && !Array.isArray(b.tkb)) ? b.tkb : {}, birthdays, sent:old ? old.sent : {} };
         await env.KV.put("subs", JSON.stringify(subs)); return response({ ok:true }, 200, origin);
       }
       if (url.pathname === "/unsubscribe") { if (b.endpoint) delete subs[await sid(b.endpoint)]; await env.KV.put("subs", JSON.stringify(subs)); return response({ ok:true }, 200, origin); }

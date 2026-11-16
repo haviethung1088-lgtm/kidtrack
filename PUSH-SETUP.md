@@ -9,3 +9,7 @@ Tạo một Worker MỚI tên `kidtrack-push`, một KV MỚI tên `kidtrack-kv`
 5. Mở `https://kidtrack-push.haviethung1088.workers.dev/health`, thấy chữ ok là được. Nếu địa chỉ Worker khác, sửa `push-config.js`.
 6. GitHub Pages cùng tài khoản `haviethung1088-lgtm.github.io` thì không cần đặt APP_ORIGIN.
 7. Trên từng điện thoại: mở KidTrack, bấm ⚙️, Bật nhắc trên máy này, cho phép thông báo, Gửi thử.
+
+## Cập nhật Worker hiện có
+
+Khi cập nhật app có thay đổi `worker.js` (ví dụ thêm nhắc sinh nhật), mở Worker `kidtrack-push` hiện có, chọn Edit code, thay toàn bộ mã bằng file `worker.js` mới trong gói dự án rồi Deploy. Giữ nguyên Worker, KV namespace và Cron Trigger hiện tại để không mất khóa VAPID và đăng ký thiết bị. Các thiết bị đã bật thông báo sẽ đồng bộ ngày sinh từ hồ sơ khi mở app và tải dữ liệu mới.
