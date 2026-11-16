@@ -230,7 +230,7 @@ import {initializeApp} from "https://www.gstatic.com/firebasejs/10.12.2/firebase
 import {initializeAuth,GoogleAuthProvider,signInWithPopup,signOut,onAuthStateChanged,browserLocalPersistence,indexedDBLocalPersistence,browserPopupRedirectResolver} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import {getFirestore,collection,doc,addDoc,setDoc,updateDoc,deleteDoc,onSnapshot,query,where,getDocs,serverTimestamp,Timestamp,writeBatch} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 const app=initializeApp(FB),auth=initializeAuth(app,{persistence:[indexedDBLocalPersistence,browserLocalPersistence]}),db=getFirestore(app);
-const APP_VER='1.10.43',APP_BUILD='16/11/2026 21:04';
+const APP_VER='1.10.44',APP_BUILD='16/11/2026 21:30';
 let swRegistration=null,appUpdateAvailable='',appUpdateStatus='';
 const $=s=>document.querySelector(s),esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const verCmp=(a,b)=>{const x=String(a).split('.').map(Number),y=String(b).split('.').map(Number);for(let i=0;i<Math.max(x.length,y.length);i++){const d=(x[i]||0)-(y[i]||0);if(d)return Math.sign(d)}return 0};
