@@ -188,15 +188,17 @@ body[data-role=viewer] [data-a=delstu]{display:none}
 body[data-role=viewer] [data-a=addc]{display:none}
 /* Desktop layout: persistent side navigation and a wider, centered workspace. */
 @media (min-width: 900px) and (pointer: fine){
-  header{padding:18px 28px 12px;margin-left:248px}
-  #headerPanel{max-width:1320px}#hb,header h1,header .sub{max-width:1320px}
+  header{padding:18px 28px 12px;margin-left:80px}
+  #headerPanel,#hb,header h1,header .sub{max-width:none}
   #hb{padding:16px 20px;grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"tm gr" "dt dt" "wx wu"}
   #tm{font-size:34px}
-  #app>main{width:auto;max-width:none;margin:0 0 0 248px;padding:0 28px 32px;zoom:1;touch-action:auto}
+  #app>main{width:auto;max-width:none;margin:0 0 0 80px;padding:0 28px 32px;zoom:1;touch-action:auto}
   .tb{top:0;padding:12px 0 10px;margin-bottom:10px;z-index:6}
   .stu-context{top:62px}
-  nav{left:16px;right:auto;top:50%;bottom:auto;transform:translateY(-50%);width:208px;max-width:none;min-height:0;flex-direction:column;align-items:stretch;gap:5px;padding:10px;border-radius:20px}
-  nav button{min-height:48px;flex:0 0 auto;flex-direction:row;justify-content:flex-start;gap:12px;padding:8px 13px;border-radius:13px;font-size:14px;text-align:left}
+  nav{left:12px;right:auto;top:50%;bottom:auto;transform:translateY(-50%);width:62px;max-width:none;min-height:0;flex-direction:column;align-items:stretch;gap:5px;padding:8px;border-radius:20px;overflow:hidden;transition:width .22s ease,box-shadow .22s ease}
+  nav:hover,nav:focus-within{width:208px;box-shadow:0 12px 36px #0008,inset 0 1px #ffffff30}
+  nav button{min-height:48px;flex:0 0 auto;flex-direction:row;justify-content:center;gap:0;padding:8px 0;border-radius:13px;font-size:0;text-align:left;white-space:nowrap;transition:font-size .15s ease,gap .2s ease,padding .2s ease}
+  nav:hover button,nav:focus-within button{justify-content:flex-start;gap:12px;padding:8px 13px;font-size:14px}
   nav button svg{width:20px;height:20px;flex:0 0 20px}
   nav.nav-hiding{transform:translateY(-50%);opacity:1;pointer-events:auto}
   .cd{padding:8px 20px 16px;margin-bottom:16px;border-radius:18px}
@@ -220,7 +222,7 @@ import {initializeApp} from "https://www.gstatic.com/firebasejs/10.12.2/firebase
 import {initializeAuth,GoogleAuthProvider,signInWithPopup,signOut,onAuthStateChanged,browserLocalPersistence,indexedDBLocalPersistence,browserPopupRedirectResolver} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import {getFirestore,collection,doc,addDoc,setDoc,updateDoc,deleteDoc,onSnapshot,query,where,getDocs,serverTimestamp,Timestamp,writeBatch} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 const app=initializeApp(FB),auth=initializeAuth(app,{persistence:[indexedDBLocalPersistence,browserLocalPersistence]}),db=getFirestore(app);
-const APP_VER='1.10.35',APP_BUILD='16/11/2026 19:45';
+const APP_VER='1.10.36',APP_BUILD='16/11/2026 19:56';
 let swRegistration=null,appUpdateAvailable='',appUpdateStatus='';
 const $=s=>document.querySelector(s),esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const verCmp=(a,b)=>{const x=String(a).split('.').map(Number),y=String(b).split('.').map(Number);for(let i=0;i<Math.max(x.length,y.length);i++){const d=(x[i]||0)-(y[i]||0);if(d)return Math.sign(d)}return 0};
