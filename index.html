@@ -272,8 +272,8 @@ button{min-height:42px}button:focus-visible,input:focus-visible,select:focus-vis
  .tkw{border-radius:12px}table.tk{font-size:14px;min-width:560px}table.tk td,table.tk th{padding:4px}table.tk th{font-size:13px}.sj{min-height:52px;padding:7px 5px}.sj b{font-size:13.5px}.sj small{font-size:11px}
 }
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}/* Notification center v1.10.49 */
-#noticeBell{position:relative;border:0;border-radius:50%;background:#ffffff17;color:#fff;width:36px;height:36px;padding:7px;display:inline-flex;align-items:center;justify-content:center;filter:drop-shadow(0 1px 3px #0016)}
-#noticeBell svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+#noticeBell{position:relative;border:0;border-radius:50%;background:transparent;color:#fff;width:32px;height:32px;padding:0;display:inline-flex;align-items:center;justify-content:center;filter:none}
+#noticeBell svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
 #noticeBadge{position:absolute;right:-4px;top:-5px;min-width:17px;height:17px;padding:0 4px;border:2px solid #193451;border-radius:99px;background:#e7354e;color:#fff;font:700 10px/13px -apple-system,Arial,sans-serif;text-align:center;box-shadow:0 1px 5px #0005}
 #noticeBadge[hidden]{display:none!important}
 .notice-modal{align-items:flex-start;padding:calc(12px + env(safe-area-inset-top,0px)) 12px calc(12px + env(safe-area-inset-bottom,0px));overflow:auto}
@@ -281,9 +281,9 @@ button{min-height:42px}button:focus-visible,input:focus-visible,select:focus-vis
 .notice-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;border-bottom:1px solid var(--ln);padding-bottom:10px;margin-bottom:10px}.notice-head h2{font-size:21px!important;font-weight:800!important;color:var(--ink)!important;margin:0!important}.notice-head .k{margin:3px 0 0}.notice-close{width:40px;height:40px;padding:0;border-radius:50%;font-size:25px;line-height:1}
 .notice-read-all{display:block;margin:8px 0 12px auto;background:color-mix(in srgb,var(--c) 9%,var(--card));color:var(--c);border-color:color-mix(in srgb,var(--c) 25%,var(--ln));font-size:13px;font-weight:700}
 .notice-list{display:grid;gap:10px}.notice-item{padding:13px 14px;border:1px solid var(--ln);border-radius:15px;background:var(--card)}.notice-item.unread{border-color:color-mix(in srgb,var(--c) 38%,var(--ln));background:linear-gradient(105deg,color-mix(in srgb,var(--c) 9%,var(--card)),var(--card) 72%);box-shadow:inset 4px 0 var(--c)}.notice-item-top{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:5px}.notice-kind{font-size:11px;font-weight:800;letter-spacing:.35px;text-transform:uppercase;color:var(--c)}.notice-item time{font-size:11px;color:var(--mut);white-space:nowrap}.notice-item>b{display:block;font-size:15px;line-height:1.35}.notice-item p{margin:4px 0 9px;color:var(--mut);font-size:14px;line-height:1.45}.notice-actions{display:flex;justify-content:flex-end}.notice-actions button{min-height:38px;padding:7px 12px;font-size:13px}.notice-read-label{align-self:center;color:var(--mut);font-size:12px}.notice-empty{display:grid;justify-items:center;text-align:center;gap:7px;padding:36px 18px;color:var(--mut)}.notice-empty span{display:grid;place-items:center;width:50px;height:50px;border-radius:50%;background:color-mix(in srgb,var(--ok) 14%,var(--card));color:var(--ok);font-size:25px;font-weight:800}.notice-empty b{color:var(--ink);font-size:16px}.notice-empty small{font-size:13px;max-width:300px}
-html[data-skin=chelsea] #noticeBell{background:#ffffff19;color:#e5f2ff}html[data-skin=chelsea] #noticeBadge{border-color:#0b2850}
+html[data-skin=chelsea] #noticeBell{background:transparent;color:#e5f2ff}html[data-skin=chelsea] #noticeBadge{border-color:#0b2850}
 @media(min-width:900px) and (pointer:fine){.notice-modal{align-items:center;padding:24px}.notice-box{max-height:min(820px,90vh)!important}}
-@media(max-width:400px){#noticeBell{width:32px;height:32px;padding:6px}#noticeBell svg{width:20px;height:20px}.notice-modal{padding-left:7px;padding-right:7px}.notice-box{padding:14px!important}}</style></head><body><div id="app"><div class="ld"><img src="icon-192.png" alt=""><b>KidTrack</b></div></div>
+@media(max-width:400px){#noticeBell{width:32px;height:32px;padding:0}#noticeBell svg{width:16px;height:16px}.notice-modal{padding-left:7px;padding-right:7px}.notice-box{padding:14px!important}}</style></head><body><div id="app"><div class="ld"><img src="icon-192.png" alt=""><b>KidTrack</b></div></div>
 <script type="module">
 /* ==== DÁN CẤU HÌNH FIREBASE CỦA ANH VÀO ĐÂY (Project settings > Your apps > Web) ==== */
 const FB=window.KT_FB||{};
@@ -292,7 +292,7 @@ import {initializeApp} from "https://www.gstatic.com/firebasejs/10.12.2/firebase
 import {initializeAuth,GoogleAuthProvider,signInWithPopup,signOut,onAuthStateChanged,browserLocalPersistence,indexedDBLocalPersistence,browserPopupRedirectResolver} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import {getFirestore,collection,doc,addDoc,setDoc,updateDoc,deleteDoc,onSnapshot,query,where,getDocs,serverTimestamp,Timestamp,writeBatch} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 const app=initializeApp(FB),auth=initializeAuth(app,{persistence:[indexedDBLocalPersistence,browserLocalPersistence]}),db=getFirestore(app);
-const APP_VER='1.10.49',APP_BUILD='17/11/2026 13:53';
+const APP_VER='1.10.50',APP_BUILD='17/11/2026 13:59';
 let swRegistration=null,appUpdateAvailable='',appUpdateStatus='',noticeUnread=0,noticeDbPromise=null,noticeItems=[];const NOTICE_DB='kidtrack-notices-v1';
 const verCmp=(a,b)=>{const x=String(a).split('.').map(Number),y=String(b).split('.').map(Number);for(let i=0;i<Math.max(x.length,y.length);i++){const d=(x[i]||0)-(y[i]||0);if(d)return Math.sign(d)}return 0};
 function updateStatus(s){appUpdateStatus=s;const e=$('#appUpdateStatus'),b=$('#updateBannerStatus');if(e)e.textContent=s;if(b)b.textContent=s}
