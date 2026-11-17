@@ -221,7 +221,57 @@ body[data-role=viewer] [data-a=addc]{display:none}
   .md input,.md select{font-size:15px}
   .out{margin:24px auto}
 }
-</style></head><body><div id="app"><div class="ld"><img src="icon-192.png" alt=""><b>KidTrack</b></div></div>
+/* Visual refresh v1.10.48: stronger hierarchy, readable cards, stable desktop navigation. */
+:root{--surface-soft:color-mix(in srgb,var(--c) 5%,var(--card));--card-shadow:0 3px 14px #14283d12;--card-shadow-hover:0 7px 22px #14283d20}
+html[data-skin=sea],html[data-skin=chelsea],html[data-skin=sunset]{--card-shadow:0 4px 18px #0003;--card-shadow-hover:0 8px 24px #0005}
+body{font-size:16px;line-height:1.55}
+main{padding-left:clamp(14px,2.6vw,24px);padding-right:clamp(14px,2.6vw,24px)}
+.cd{background:var(--card);border:1px solid color-mix(in srgb,var(--c) 16%,var(--ln));border-radius:18px;box-shadow:var(--card-shadow);padding:8px 18px 16px;margin-bottom:14px;transition:border-color .18s ease,box-shadow .18s ease}
+.cd:focus-within{border-color:color-mix(in srgb,var(--c) 42%,var(--ln));box-shadow:var(--card-shadow-hover)}
+.cd>h2{font-size:16px;line-height:1.35;font-weight:700;color:var(--ink);margin:14px 0 5px;letter-spacing:.05px}
+.cd .k,.k{font-size:14px;line-height:1.5;color:var(--mut)}
+.tiles{gap:10px;margin:12px 0}.tile{background:var(--surface-soft);border-color:color-mix(in srgb,var(--c) 14%,var(--ln));padding:12px 14px;border-radius:14px}.tile small{font-size:13px;line-height:1.35}.tile b{font-size:23px;line-height:1.3;margin-top:2px}
+.hb{grid-template-columns:minmax(100px,150px) minmax(40px,1fr) 44px;gap:12px;font-size:14px;margin:11px 0}.hb .bar{height:10px}.hb b{font-size:15px}
+.fh{font-size:15px;font-weight:650;padding:12px 13px;border:1px solid color-mix(in srgb,var(--c) 16%,var(--ln));background:var(--surface-soft)}
+.tb{gap:8px}.tb button{min-height:44px;padding:8px 17px;font-size:14px;border:1px solid color-mix(in srgb,var(--ln) 85%,transparent);box-shadow:0 1px 3px #1020300d}.tb button.on{box-shadow:0 3px 10px color-mix(in srgb,var(--c) 26%,transparent);font-weight:700}
+button{min-height:42px}button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid color-mix(in srgb,var(--c) 72%,#fff);outline-offset:2px}
+.student-view{background:linear-gradient(180deg,color-mix(in srgb,var(--c) 9%,var(--bg)),var(--bg) 420px)}
+.student-view>.cd{border-left-width:8px!important;border-radius:12px 18px 18px 12px!important;background:linear-gradient(100deg,color-mix(in srgb,var(--c) 8%,var(--card)),var(--card) 32%)!important;box-shadow:var(--card-shadow),inset 0 0 0 1px color-mix(in srgb,var(--c) 8%,transparent)}
+.student-view>.cd>h2{display:flex;align-items:center;gap:8px;color:var(--ink);font-weight:750}
+.stu-context{min-height:78px;border-width:2px;padding:12px 17px;background:linear-gradient(105deg,var(--c),color-mix(in srgb,var(--c) 75%,#102844));box-shadow:0 7px 22px #0003,0 0 0 3px color-mix(in srgb,var(--c) 17%,transparent)}
+.stu-context .sc-mark{width:50px;height:50px;flex-basis:50px;font-size:17px}.stu-context small{font-size:11px;letter-spacing:1px}.stu-context b{font-size:23px}
+.sc{border-radius:20px;box-shadow:0 6px 18px #06172e22;transition:transform .16s ease,box-shadow .16s ease}.sc:active{transform:scale(.99)}
+.fam-day-child{background:var(--surface-soft);box-shadow:0 2px 8px #1020300b;padding:12px}.fam-day-child h3{font-size:15px}.fam-period{padding:9px 0}.fam-period b{font-size:13px}.fam-period small{font-size:12px}
+.sync-note{font-size:14px;border-radius:12px}
+@media(max-width:600px){
+ body{font-size:16px}main{padding-left:14px;padding-right:14px;padding-bottom:calc(112px + env(safe-area-inset-bottom,0px))}
+ .cd{padding:8px 14px 14px;margin-bottom:12px;border-radius:16px}.cd>h2{font-size:15.5px;margin-top:12px}
+ .k,.cd .k{font-size:13.5px}.tile{padding:10px 11px}.tile small{font-size:12px}.tile b{font-size:21px}
+ .hb{grid-template-columns:minmax(84px,1fr) minmax(34px,1.3fr) 40px;gap:8px;font-size:13px}.hb b{font-size:14px}
+ .tb{margin-left:-2px;margin-right:-2px;padding-left:2px;padding-right:2px}.tb button{padding:8px 13px;font-size:13px}
+ .stu-context{top:48px;min-height:70px;padding:9px 12px}.stu-context b{font-size:20px}
+ .fam-day-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}.fam-day-child{padding:9px}.fam-day-child h3{font-size:13px}.fam-period small{font-size:11px}
+ table{font-size:14px}td,th{padding:9px 5px}th{font-size:13px}
+}
+@media(max-width:360px){.fam-day-grid{grid-template-columns:1fr}.tb button{padding-left:11px;padding-right:11px}.hb{grid-template-columns:minmax(72px,.9fr) minmax(28px,1.2fr) 38px}}
+@media(min-width:900px) and (pointer:fine){
+ header{width:calc(100% - 252px);max-width:1540px;margin:0 auto 0 236px;padding:18px 30px 12px}
+ #headerPanel{max-width:none}
+ #app>main{width:calc(100% - 252px);max-width:1540px;margin:0 auto 0 236px;padding:0 30px 42px;zoom:1;touch-action:auto}
+ nav{left:14px;right:auto;top:14px;bottom:14px;transform:none!important;width:204px!important;max-width:204px;min-height:0;flex-direction:column;align-items:stretch;justify-content:flex-start;gap:6px;padding:12px 10px;border:1px solid color-mix(in srgb,var(--c) 24%,var(--ln));border-radius:20px;background:color-mix(in srgb,var(--card) 94%,transparent);box-shadow:0 8px 28px #10203020;backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);overflow:auto}
+ nav:hover,nav:focus-within{width:204px!important;background:color-mix(in srgb,var(--card) 96%,transparent);border-color:color-mix(in srgb,var(--c) 30%,var(--ln));box-shadow:0 8px 28px #10203020}
+ .nav-brand,.nav:hover .nav-brand,.nav:focus-within .nav-brand{display:flex;justify-content:flex-start;padding:0 6px;height:52px;flex:0 0 52px}
+ .nav-brand img{width:36px;height:36px;flex-basis:36px}.nav-brand span,nav:hover .nav-brand span,nav:focus-within .nav-brand span{display:inline;opacity:1}
+ nav button,nav:hover button,nav:focus-within button{min-height:48px;justify-content:flex-start;gap:12px;padding:8px 12px;border-radius:12px;font-size:14px}
+ nav button.on{background:color-mix(in srgb,var(--c) 12%,var(--card));border-color:color-mix(in srgb,var(--c) 34%,var(--ln));box-shadow:inset 3px 0 var(--c)}
+ nav.nav-hiding{transform:none!important;opacity:1;pointer-events:auto}
+ .cd{padding:10px 22px 18px;margin-bottom:17px;border-radius:20px}.cd>h2{font-size:17px;margin-top:15px}
+ .student-view>.cd{padding-left:22px}.stu-context{top:62px}
+ .sc{max-width:560px;padding:20px 24px}
+ .fam-day-grid{gap:12px}.fam-day-child{padding:14px}.fam-day-child h3{font-size:16px}.fam-period b{font-size:14px}.fam-period small{font-size:12px}
+ .tkw{border-radius:12px}table.tk{font-size:14px;min-width:560px}table.tk td,table.tk th{padding:4px}table.tk th{font-size:13px}.sj{min-height:52px;padding:7px 5px}.sj b{font-size:13.5px}.sj small{font-size:11px}
+}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}</style></head><body><div id="app"><div class="ld"><img src="icon-192.png" alt=""><b>KidTrack</b></div></div>
 <script type="module">
 /* ==== DÁN CẤU HÌNH FIREBASE CỦA ANH VÀO ĐÂY (Project settings > Your apps > Web) ==== */
 const FB=window.KT_FB||{};
@@ -230,7 +280,7 @@ import {initializeApp} from "https://www.gstatic.com/firebasejs/10.12.2/firebase
 import {initializeAuth,GoogleAuthProvider,signInWithPopup,signOut,onAuthStateChanged,browserLocalPersistence,indexedDBLocalPersistence,browserPopupRedirectResolver} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import {getFirestore,collection,doc,addDoc,setDoc,updateDoc,deleteDoc,onSnapshot,query,where,getDocs,serverTimestamp,Timestamp,writeBatch} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 const app=initializeApp(FB),auth=initializeAuth(app,{persistence:[indexedDBLocalPersistence,browserLocalPersistence]}),db=getFirestore(app);
-const APP_VER='1.10.47',APP_BUILD='17/11/2026 12:23';
+const APP_VER='1.10.48',APP_BUILD='17/11/2026 13:40';
 let swRegistration=null,appUpdateAvailable='',appUpdateStatus='';
 const $=s=>document.querySelector(s),esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const verCmp=(a,b)=>{const x=String(a).split('.').map(Number),y=String(b).split('.').map(Number);for(let i=0;i<Math.max(x.length,y.length);i++){const d=(x[i]||0)-(y[i]||0);if(d)return Math.sign(d)}return 0};
