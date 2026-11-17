@@ -81,11 +81,11 @@ header .td{font-weight:500;margin-top:2px}.ls{padding:1px 0}.ls b{font-variant-n
 #hb{background:var(--hp);color:#fff;border-radius:16px;padding:12px 14px;align-items:stretch;justify-content:space-between;gap:12px;box-shadow:0 2px 8px #0003}
 #hb .tl{min-width:0}#hb .tr{display:flex;flex-direction:column;align-items:flex-end;text-align:right;gap:2px;flex:0 0 auto}
 #tm{display:block;font-size:30px;line-height:1.1;font-weight:700;letter-spacing:.5px;font-variant-numeric:tabular-nums}
-#dt{margin:4px 0 0;font-size:13px;color:#ffffffd9;line-height:1.35}
+#dt{margin:4px 0 0;font-size:15px;font-weight:500;color:#fff;line-height:1.35}
 #gear,#zoomGear,#wr{border:0;border-radius:99px;background:transparent;color:#fff;width:24px;height:24px;padding:0;display:inline-flex;align-items:center;justify-content:center;font-size:11px;line-height:1;filter:brightness(1.2)}
 #gear{font-size:14px}#zoomGear{font-size:11px;font-weight:800;letter-spacing:-.5px}
-.wl{display:flex;align-items:center;gap:6px;font-size:14px;font-weight:500;white-space:nowrap;margin-top:2px}#wr{width:18px;height:18px;font-size:11px;transform:translateY(-4px)}
-#wu{font-size:11px;color:#ffffff8c;margin-top:1px}
+.weather-info{grid-area:wx;display:flex;flex-direction:column;align-items:flex-start;gap:1px;min-width:0}.wl{display:flex;align-items:center;gap:6px;font-size:14px;font-weight:500;white-space:nowrap;margin:0}#wr{width:18px;height:18px;font-size:11px;transform:translateY(-4px)}
+#wu{font-size:11px;color:#ffffffb8;margin:0;line-height:1.25;text-align:left}
 @keyframes sp{from{transform:translateY(-4px) rotate(0deg)}to{transform:translateY(-4px) rotate(360deg)}}#wr.spin{animation:sp .8s linear infinite!important;transform-origin:50% 50%}
 
 nav{position:fixed;left:50%;right:auto;bottom:4px;bottom:max(4px,calc(env(safe-area-inset-bottom,0px) - 14px));z-index:900;width:calc(100% - 16px);max-width:560px;gap:3px;padding:6px;border:1px solid color-mix(in srgb,var(--c) 32%,var(--ln));border-radius:23px;background:color-mix(in srgb,var(--card) 94%,transparent);box-shadow:0 8px 28px #0003,inset 0 1px #ffffff30;backdrop-filter:blur(18px) saturate(1.35);-webkit-backdrop-filter:blur(18px) saturate(1.35);transform:translateX(-50%);transition:transform 1.2s cubic-bezier(.2,.7,.25,1),opacity 1.2s ease-in-out;padding-bottom:6px}
@@ -121,13 +121,13 @@ body[data-role=viewer] [data-a=tkbedit]{display:none}
 html[data-skin=sunflower] #hb{background-color:#5A4219;background-image:linear-gradient(90deg,rgba(38,26,8,.68) 0%,rgba(60,40,10,.42) 55%,rgba(60,40,10,.15) 100%),url("https://images.unsplash.com/photo-1548291616-bfccc8db731d?fm=jpg&q=50&w=900&auto=format&fit=crop&ixlib=rb-4.1.0");background-size:cover;background-position:center 62%;text-shadow:0 1px 3px rgba(0,0,0,.5)}
 
 #headerPanel{position:relative;isolation:isolate;overflow:hidden;max-width:640px;margin:0 auto;padding:7px;box-sizing:border-box;background:var(--hp);border-radius:16px;box-shadow:0 2px 8px #0003}
-#hb{position:relative;display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"tm gr" "dt dt" "wx wu";align-items:center;gap:3px 10px;padding:10px 14px;background:#193451c9;border-radius:12px;box-shadow:inset 0 1px #ffffff20}
+#hb{position:relative;display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"tm gr" "dt dt" "wx wx";align-items:center;gap:3px 10px;padding:10px 14px;background:#193451c9;border-radius:12px;box-shadow:inset 0 1px #ffffff20}
 header h1.greeting{position:relative;z-index:2;display:flex;align-items:baseline;gap:8px;width:auto;max-width:none;box-sizing:border-box;margin:6px 0 0;padding:7px 11px;border-radius:12px;background:#06172e88;color:#fff;box-shadow:inset 0 1px #ffffff20;font-size:15px;line-height:1.2;white-space:nowrap;overflow:hidden}
 header h1.greeting small{font-size:11px;font-weight:400;color:#ffffffa8;overflow:hidden;text-overflow:ellipsis}
 #hb .tl,#hb .tr{display:contents}
 #tm{grid-area:tm;font-size:28px}.header-tools{position:absolute;z-index:6;top:10px;right:12px;display:flex;align-items:center;gap:6px}.header-tools #gear,.header-tools #zoomGear{grid-area:auto;justify-self:auto}
-#dt{grid-area:dt;margin:0;font-size:13px;white-space:nowrap;min-width:0}
-#hb .wl{grid-area:wx;margin:0}#wu{grid-area:wu;justify-self:end;text-align:right;margin:0}
+#dt{grid-area:dt;margin:0;font-size:15px;font-weight:500;white-space:nowrap;min-width:0}
+#hb .weather-info{grid-area:wx}
 .cd.hl{border:2px solid color-mix(in srgb,var(--c) 50%,var(--ln));box-shadow:0 4px 16px color-mix(in srgb,var(--c) 16%,transparent)}
 .cd.hl>h2{color:var(--c);font-size:16px;font-weight:700}
 .tkw{overflow-x:auto;margin:4px -6px 0;padding:0 6px}
@@ -193,7 +193,7 @@ body[data-role=viewer] [data-a=addc]{display:none}
 @media (min-width: 900px) and (pointer: fine){
   header{padding:18px 28px 12px;margin-left:80px;background:transparent;border-bottom:0}
   #headerPanel,#hb,header h1,header .sub{max-width:none}
-  #hb{padding:16px 20px;grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"tm gr" "dt dt" "wx wu"}
+  #hb{padding:16px 20px;grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"tm gr" "dt dt" "wx wx"}
   #tm{font-size:34px}
   #app>main{width:auto;max-width:none;margin:0 0 0 80px;padding:0 28px 32px;zoom:1;touch-action:auto}
   .tb{top:0;padding:12px 0 10px;margin-bottom:10px;z-index:6;background:transparent}
@@ -230,7 +230,7 @@ import {initializeApp} from "https://www.gstatic.com/firebasejs/10.12.2/firebase
 import {initializeAuth,GoogleAuthProvider,signInWithPopup,signOut,onAuthStateChanged,browserLocalPersistence,indexedDBLocalPersistence,browserPopupRedirectResolver} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import {getFirestore,collection,doc,addDoc,setDoc,updateDoc,deleteDoc,onSnapshot,query,where,getDocs,serverTimestamp,Timestamp,writeBatch} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 const app=initializeApp(FB),auth=initializeAuth(app,{persistence:[indexedDBLocalPersistence,browserLocalPersistence]}),db=getFirestore(app);
-const APP_VER='1.10.45',APP_BUILD='16/11/2026 21:41';
+const APP_VER='1.10.46',APP_BUILD='17/11/2026 11:33';
 let swRegistration=null,appUpdateAvailable='',appUpdateStatus='';
 const $=s=>document.querySelector(s),esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const verCmp=(a,b)=>{const x=String(a).split('.').map(Number),y=String(b).split('.').map(Number);for(let i=0;i<Math.max(x.length,y.length);i++){const d=(x[i]||0)-(y[i]||0);if(d)return Math.sign(d)}return 0};
@@ -332,7 +332,7 @@ function tick(){const n=new Date(),a=$('#tm'),b=$('#dt');if(a)a.textContent=n.to
 setInterval(tick,1000);document.addEventListener('visibilitychange',()=>{if(!document.hidden){tick();getWx()}});
 const greet=()=>{const h=new Date().getHours();return h>=4&&h<12?'Chào buổi sáng':h>=12&&h<18?'Chào buổi chiều':'Chào buổi tối'},greetExtra=['Chúc cả nhà vui vẻ','Một ngày thật tốt nhé','Cùng cố gắng nhé','Luôn vui và khỏe nhé','Bình an, nhiều niềm vui'][Math.floor(Math.random()*5)];
 function header(){const dw=new Date().getDay(),L=D.courses.flatMap(c=>{const s=D.students.find(x=>x.id===c.studentId);return s?sched(c).filter(x=>x.d===dw).map(x=>({t:x.t||'',s:s.name,c:c.name})):[]}).sort((a,b)=>(a.t||'99').localeCompare(b.t||'99')||a.s.localeCompare(b.s,'vi'));
- return `<header><div id="headerPanel"><div id="hb"><div class="tl"><b id="tm"></b><div id="dt"></div></div><div class="tr"><div class="header-tools"><button id="zoomGear" data-a="zoomPanel" aria-label="Thu phóng" title="Thu phóng">Aa</button><button id="gear" data-a="cfg" aria-label="Tùy chỉnh">⚙︎</button></div><div class="wl"><span id="wx"></span><button id="wr" data-a="wref" aria-label="Làm mới thời tiết">↻</button></div><div id="wu"></div></div></div><h1 class="greeting"><span>${greet()}!</span><small>${greetExtra}</small></h1></div><div class="sub">${isAdmin()?'':'<div>Chế độ xem</div>'}</div></header>`}
+ return `<header><div id="headerPanel"><div id="hb"><div class="tl"><b id="tm"></b><div id="dt"></div></div><div class="tr"><div class="header-tools"><button id="zoomGear" data-a="zoomPanel" aria-label="Thu phóng" title="Thu phóng">Aa</button><button id="gear" data-a="cfg" aria-label="Tùy chỉnh">⚙︎</button></div><div class="weather-info"><div class="wl"><span id="wx"></span><button id="wr" data-a="wref" aria-label="Làm mới thời tiết">↻</button></div><div id="wu"></div></div></div></div><h1 class="greeting"><span>${greet()}!</span><small>${greetExtra}</small></h1></div><div class="sub">${isAdmin()?'':'<div>Chế độ xem</div>'}</div></header>`}
 /* ẩn thanh tab khi cuộn xuống, chụm hai ngón để đổi cỡ chữ */
 /* thanh tab tự ẩn sau 5 giây; vuốt lên để ẩn, vuốt xuống để hiện (giống My Race) */
 let navOff=false,navT=0,navInit=false,lastStu=null,ts=null;
