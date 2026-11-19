@@ -283,7 +283,24 @@ button{min-height:42px}button:focus-visible,input:focus-visible,select:focus-vis
 .notice-list{display:grid;gap:10px}.notice-item{padding:13px 14px;border:1px solid var(--ln);border-radius:15px;background:var(--card)}.notice-item.unread{border-color:color-mix(in srgb,var(--c) 38%,var(--ln));background:linear-gradient(105deg,color-mix(in srgb,var(--c) 9%,var(--card)),var(--card) 72%);box-shadow:inset 4px 0 var(--c)}.notice-item-top{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:5px}.notice-kind{font-size:11px;font-weight:800;letter-spacing:.35px;text-transform:uppercase;color:var(--c)}.notice-item time{font-size:11px;color:var(--mut);white-space:nowrap}.notice-item>b{display:block;font-size:15px;line-height:1.35}.notice-item p{margin:4px 0 9px;color:var(--mut);font-size:14px;line-height:1.45}.notice-actions{display:flex;justify-content:flex-end}.notice-actions button{min-height:38px;padding:7px 12px;font-size:13px}.notice-read-label{align-self:center;color:var(--mut);font-size:12px}.notice-empty{display:grid;justify-items:center;text-align:center;gap:7px;padding:36px 18px;color:var(--mut)}.notice-empty span{display:grid;place-items:center;width:50px;height:50px;border-radius:50%;background:color-mix(in srgb,var(--ok) 14%,var(--card));color:var(--ok);font-size:25px;font-weight:800}.notice-empty b{color:var(--ink);font-size:16px}.notice-empty small{font-size:13px;max-width:300px}
 html[data-skin=chelsea] #noticeBell{background:transparent;color:#e5f2ff}html[data-skin=chelsea] #noticeBadge{border-color:#0b2850}
 @media(min-width:900px) and (pointer:fine){.notice-modal{align-items:center;padding:24px}.notice-box{max-height:min(820px,90vh)!important}}
-@media(max-width:400px){#noticeBell{width:32px;height:32px;padding:0}#noticeBell svg{width:16px;height:16px}.notice-modal{padding-left:7px;padding-right:7px}.notice-box{padding:14px!important}}</style></head><body><div id="app"><div class="ld"><img src="icon-192.png" alt=""><b>KidTrack</b></div></div>
+@media(max-width:400px){#noticeBell{width:32px;height:32px;padding:0}#noticeBell svg{width:16px;height:16px}.notice-modal{padding-left:7px;padding-right:7px}.notice-box{padding:14px!important}}/* 1.10.51 header and attendance safeguards */
+.header-tools #zoomGear,.header-tools #noticeBell,.header-tools #gear{box-sizing:border-box;width:32px;height:32px;min-width:32px;min-height:32px;padding:0;display:inline-flex;align-items:center;justify-content:center;border:0;border-radius:50%;background:transparent;box-shadow:none;filter:none}
+.header-tools #zoomGear{font-size:14px;line-height:1;font-weight:800;letter-spacing:-.5px}
+.header-tools #noticeBell{color:#fff}
+.header-tools #noticeBell svg{width:16px;height:16px}
+.header-tools #gear{font-size:16px;line-height:1}
+html[data-skin=chelsea] .header-tools #zoomGear{font-size:14px}html[data-skin=chelsea] .header-tools #gear{font-size:16px}html[data-skin=chelsea] .header-tools #noticeBell{background:transparent}
+header h1.greeting{font-size:16px}
+.stu-context{width:calc(100% - 12px);max-width:560px}
+@media(min-width:900px) and (pointer:fine){.stu-context{max-width:560px}}/* 1.10.52 compact weather header */
+#headerPanel{padding:5px}
+#hb{gap:1px 10px;padding:7px 14px}
+#dt{line-height:1.2}
+#hb .weather-info{gap:0}
+#hb .wl{line-height:1.15}
+#wu{line-height:1.1}
+@media(min-width:900px) and (pointer:fine){#hb{padding:10px 18px;gap:1px 12px}}
+@media(max-width:380px){#hb{padding:6px 11px;gap:1px 8px}#headerPanel{padding:4px}}</style></head><body><div id="app"><div class="ld"><img src="icon-192.png" alt=""><b>KidTrack</b></div></div>
 <script type="module">
 /* ==== DÁN CẤU HÌNH FIREBASE CỦA ANH VÀO ĐÂY (Project settings > Your apps > Web) ==== */
 const FB=window.KT_FB||{};
@@ -292,7 +309,7 @@ import {initializeApp} from "https://www.gstatic.com/firebasejs/10.12.2/firebase
 import {initializeAuth,GoogleAuthProvider,signInWithPopup,signOut,onAuthStateChanged,browserLocalPersistence,indexedDBLocalPersistence,browserPopupRedirectResolver} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import {getFirestore,collection,doc,addDoc,setDoc,updateDoc,deleteDoc,onSnapshot,query,where,getDocs,serverTimestamp,Timestamp,writeBatch} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 const app=initializeApp(FB),auth=initializeAuth(app,{persistence:[indexedDBLocalPersistence,browserLocalPersistence]}),db=getFirestore(app);
-const APP_VER='1.10.50',APP_BUILD='17/11/2026 13:59';
+const APP_VER='1.10.52',APP_BUILD='19/11/2026 11:42';
 let swRegistration=null,appUpdateAvailable='',appUpdateStatus='',noticeUnread=0,noticeDbPromise=null,noticeItems=[];const NOTICE_DB='kidtrack-notices-v1';
 const verCmp=(a,b)=>{const x=String(a).split('.').map(Number),y=String(b).split('.').map(Number);for(let i=0;i<Math.max(x.length,y.length);i++){const d=(x[i]||0)-(y[i]||0);if(d)return Math.sign(d)}return 0};
 function updateStatus(s){appUpdateStatus=s;const e=$('#appUpdateStatus'),b=$('#updateBannerStatus');if(e)e.textContent=s;if(b)b.textContent=s}
@@ -459,7 +476,7 @@ const papi=async(p,b)=>{const r=await fetch(PURL()+p,{method:b?'POST':'GET',head
 const pushSup=()=>'serviceWorker' in navigator&&'PushManager' in window&&'Notification' in window;
 function lessons(){const o={};for(let i=0;i<14;i++){const d=new Date();d.setDate(d.getDate()+i);const k=d.toLocaleDateString('sv'),dw=d.getDay();
  D.courses.filter(c=>c.type==='extra').forEach(c=>{const s=D.students.find(x=>x.id===c.studentId);if(!s||(c.start&&k<c.start)||(c.end&&k>c.end))return;
-  sched(c).filter(x=>x.d===dw).forEach(x=>{const m=(x.t||'').match(/(\d{1,2}):(\d{2})/);if(!m||D.sessions.some(z=>z.id===c.id+'_'+k&&z.status==='absent'))return;(o[k]??=[]).push({t:m[1].padStart(2,'0')+':'+m[2],e:((x.t||'').match(/-\s*(\d{1,2}):(\d{2})/)||[]).slice(1).map((v,i)=>i?v:v.padStart(2,'0')).join(':'),st:s.name,c:c.name,id:c.id})})})}return o}
+  sched(c).filter(x=>x.d===dw).forEach(x=>{const m=(x.t||'').match(/(\d{1,2}):(\d{2})/);if(!m||D.sessions.some(z=>z.id===c.id+'_'+k&&(z.status==='absent'||z.status==='toff')))return;(o[k]??=[]).push({t:m[1].padStart(2,'0')+':'+m[2],e:((x.t||'').match(/-\s*(\d{1,2}):(\d{2})/)||[]).slice(1).map((v,i)=>i?v:v.padStart(2,'0')).join(':'),st:s.name,c:c.name,id:c.id})})})}return o}
 async function pushSub(){const reg=await navigator.serviceWorker.ready;let s=await reg.pushManager.getSubscription();if(!s){const {pub}=await papi('/config');s=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:u8(pub)})}
  await papi('/subscribe',{sub:s.toJSON(),days:lessons(),tkb:tkbPayload(),birthdays:birthdayPayload(),tz:-new Date().getTimezoneOffset(),name:user.email});return s}
 function birthdayPayload(){return D.students.filter(s=>/^\d{4}-\d{2}-\d{2}$/.test(String(s.dob||''))).map(s=>({id:s.id,name:s.name,dob:s.dob}))}
@@ -655,7 +672,7 @@ function render(){const A=$('#app');
 document.addEventListener('click',async e=>{if(ignoreStuClick){e.preventDefault();e.stopImmediatePropagation();ignoreStuClick=false;return}const b=e.target.closest('[data-a]');if(!b)return;const {a,c,id,s}=b.dataset;if(['add','edit','del','pay','mark','extra','tkbadd','tkbedit','tkbImport','gcell','gqg','delstu','addc'].includes(a)&&!isAdmin())return alert('Bạn đang ở chế độ chỉ xem.');
  const F={...EXTRA(id),gcell:()=>gradeQuick(id,b.dataset.k),login:()=>signInWithPopup(auth,new GoogleAuthProvider(),browserPopupRedirectResolver),out:()=>signOut(auth),retrySpaces:()=>{if(user){spaceLookupError='';const generation=++authGeneration;loadUserSpaces(user,generation)}},retrySync:()=>{if(sid&&user){syncIssues={};stopLiveListeners();listen();watchSpace();render()}},tab:()=>goTab(id),stu:()=>{if(sel!==id)closeFolds();if(sel==='all'&&id!=='all')tab='home';sel=id;if(id!=='all')lastStu=id;render();scrollTo(0,0)},add:()=>form(c),edit:()=>form(c,id),pay:()=>payForm(id),img:()=>show(b.src),
  del:()=>confirm('Xóa mục này?')&&deleteDoc(ref(c,id)),
- mark:()=>{const d=b.dataset.d||att,k=id+'_'+d,cur=D.sessions.find(x=>x.id===k)?.status;return cur===s?deleteDoc(ref('sessions',k)):setDoc(ref('sessions',k),{studentId:sel,courseId:id,date:d,status:s,by:user.email,createdAt:serverTimestamp()})},
+ mark:()=>{const d=b.dataset.d||att,k=id+'_'+d,cur=D.sessions.find(x=>x.id===k)?.status,names={present:'Đi học',absent:'Nghỉ',toff:'Cô nghỉ',makeup:'Học bù'},next=cur===s?'Chưa điểm danh':(names[s]||s),course=D.courses.find(x=>x.id===id)?.name||'Buổi học';if(!confirm('Xác nhận điểm danh?\n'+course+' · '+fmtD(d)+'\nTrạng thái: '+next+(cur?' (hiện tại: '+(names[cur]||cur)+')':'')))return;return cur===s?deleteDoc(ref('sessions',k)):setDoc(ref('sessions',k),{studentId:sel,courseId:id,date:d,status:s,by:user.email,createdAt:serverTimestamp()})},
  extra:()=>{if(!mine('courses').length)return;ask('Ghi buổi học bù hoặc ngoài lịch',[{k:'c',l:'Môn',t:'select',o:mine('courses').filter(c=>c.type==='extra').map(x=>[x.id,x.name])},{k:'d',l:'Ngày',t:'date',v:today()},{k:'s',l:'Trạng thái',t:'select',o:[['makeup','Học bù (tính 1 buổi)'],['present','Đi học (buổi ngoài lịch)']]}],{},v=>{if(!v.d)throw Error('Cần chọn ngày.');return setDoc(ref('sessions',v.c+'_'+v.d),{studentId:sel,courseId:v.c,date:v.d,status:v.s,by:user.email,createdAt:serverTimestamp()})})},
  setup:()=>ask('Tạo không gian chung',[{k:'name',l:'Tên (VD: Gia đình Hùng)'},{k:'p',l:'Email Google của người được chia sẻ (chỉ xem), có thể bỏ trống',t:'email'}],{},async v=>{const a=[me()],w=[(v.p||'').trim().toLowerCase()].filter(x=>x&&x!==me()),o={name:v.name,admins:a,viewers:w,members:[...a,...w]},r=await addDoc(collection(db,'spaces'),{...o,createdAt:serverTimestamp()});stopLiveListeners();clearWorkspace();sid=r.id;sp=o;spaceLookupError='';syncIssues={};listen();watchSpace();render()})};
  try{await F[a]?.()}catch(x){alert(x.message)}});
