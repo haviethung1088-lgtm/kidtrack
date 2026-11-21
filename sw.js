@@ -1,11 +1,11 @@
 /* KidTrack – Service Worker: offline + Web Push */
-var V = "kidtrack-v59";
+var V = "kidtrack-v60";
 var NOTICE_DB = "kidtrack-notices-v1";
 function openNoticeDB() { return new Promise(function(resolve,reject){ var r=indexedDB.open(NOTICE_DB,1); r.onupgradeneeded=function(){if(!r.result.objectStoreNames.contains("items"))r.result.createObjectStore("items",{keyPath:"id"});}; r.onsuccess=function(){resolve(r.result);}; r.onerror=function(){reject(r.error);}; }); }
 function updatePushBadge() { return openNoticeDB().then(function(db){return new Promise(function(resolve,reject){var r=db.transaction("items","readonly").objectStore("items").getAll();r.onsuccess=function(){var count=(r.result||[]).filter(function(n){return !n.read;}).length;try{if(count&&self.navigator&&self.navigator.setAppBadge)Promise.resolve(self.navigator.setAppBadge(count)).then(resolve,resolve);else if(!count&&self.navigator&&self.navigator.clearAppBadge)Promise.resolve(self.navigator.clearAppBadge()).then(resolve,resolve);else resolve();}catch(e){resolve();}};r.onerror=function(){reject(r.error);};});}); }function storePushNotice(n) { return openNoticeDB().then(function(db){return new Promise(function(resolve,reject){var r=db.transaction("items","readwrite").objectStore("items").put(n);r.onsuccess=function(){resolve();};r.onerror=function(){reject(r.error);};});}); }
 function markPushNoticeRead(id) { if(!id)return Promise.resolve(); return openNoticeDB().then(function(db){return new Promise(function(resolve,reject){var tx=db.transaction("items","readwrite"),s=tx.objectStore("items"),r=s.get(id);r.onsuccess=function(){if(r.result){var n=r.result;n.read=true;s.put(n);} };tx.oncomplete=function(){resolve();};tx.onerror=function(){reject(tx.error);};});}); }
 /* Ảnh bài bổ trợ được lưu vào cache khi người dùng mở bài; không tải cả bộ khi cài app. */
-var ASSETS = ["./", "index.html", "firebase-config.js", "push-config.js", "manifest.webmanifest", "icon-192.png", "icon-512.png", "apple-touch-icon.png"];
+var ASSETS = ["./", "index.html", "kidtrack-core.mjs", "firebase-config.js", "push-config.js", "manifest.webmanifest", "icon-192.png", "icon-512.png", "apple-touch-icon.png"];
 
 self.addEventListener("install", function (e) {
   e.waitUntil(caches.open(V).then(function (c) { return c.addAll(ASSETS); }).catch(function () {}).then(function () { return self.skipWaiting(); }));
