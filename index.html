@@ -316,9 +316,9 @@ if(!FB.apiKey){document.getElementById("app").innerHTML='<main class="c"><h1>Kid
 import {initializeApp} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import {initializeAuth,GoogleAuthProvider,signInWithPopup,signOut,onAuthStateChanged,browserLocalPersistence,indexedDBLocalPersistence,browserPopupRedirectResolver} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import {getFirestore,collection,doc,addDoc,setDoc,updateDoc,deleteDoc,onSnapshot,query,where,getDocs,serverTimestamp,Timestamp,writeBatch} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-import {addTimetablePeriod,isLessonReminderCancelled} from './kidtrack-core.mjs';
+import {addTimetablePeriod,isLessonReminderCancelled,notificationRouteFromSearch} from './kidtrack-core.mjs';
 const app=initializeApp(FB),auth=initializeAuth(app,{persistence:[indexedDBLocalPersistence,browserLocalPersistence]}),db=getFirestore(app);
-const APP_VER='1.10.54',APP_BUILD='21/11/2026 14:20';
+const APP_VER='1.10.55',APP_BUILD='21/11/2026 14:40';
 let swRegistration=null,appUpdateAvailable='',appUpdateStatus='',noticeUnread=0,noticeDbPromise=null,noticeItems=[];const NOTICE_DB='kidtrack-notices-v1';
 const verCmp=(a,b)=>{const x=String(a).split('.').map(Number),y=String(b).split('.').map(Number);for(let i=0;i<Math.max(x.length,y.length);i++){const d=(x[i]||0)-(y[i]||0);if(d)return Math.sign(d)}return 0};
 function updateStatus(s){appUpdateStatus=s;const e=$('#appUpdateStatus'),b=$('#updateBannerStatus');if(e)e.textContent=s;if(b)b.textContent=s}
@@ -336,7 +336,7 @@ async function applyAppUpdate(targetVersion=appUpdateAvailable){if(!targetVersio
 const $=s=>document.querySelector(s),esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const fm=n=>{const d=String(n??'').replace(/\D/g,'');return d?(+d).toLocaleString('vi-VN'):''},vnd=n=>Math.round(n||0).toLocaleString('vi-VN')+' đ',today=()=>new Date().toLocaleDateString('sv'),fmtD=s=>s?s.split('-').reverse().join('/'):'';
 const DOW=['CN','T2','T3','T4','T5','T6','T7'],COLS=['students','courses','sessions','fees','payments','grades','tkbimgs','tkbs'];
-let user,sp={},sid,boot=true,tab='home',sel='all',att=today();const D={};COLS.forEach(c=>D[c]=[]);
+let user,sp={},sid,boot=true,tab='home',sel='all',att=today(),pendingNoticeRoute=notificationRouteFromSearch(location.search);const D={};COLS.forEach(c=>D[c]=[]);
 const backupKey=()=>`kidtrack_backup_${sid||'none'}`;
 const backupInterval=7*864e5,backupSnoozeKey=()=>backupKey()+'_snooze';
 function backupDue(){try{const t=+(localStorage.getItem(backupKey())||0);return !t||Date.now()-t>=backupInterval}catch(e){return false}}
@@ -488,7 +488,7 @@ const papi=async(p,b)=>{const r=await fetch(PURL()+p,{method:b?'POST':'GET',head
 const pushSup=()=>'serviceWorker' in navigator&&'PushManager' in window&&'Notification' in window;
 function lessons(){const o={};for(let i=0;i<14;i++){const d=new Date();d.setDate(d.getDate()+i);const k=d.toLocaleDateString('sv'),dw=d.getDay();
  D.courses.filter(c=>c.type==='extra').forEach(c=>{const s=D.students.find(x=>x.id===c.studentId);if(!s||(c.start&&k<c.start)||(c.end&&k>c.end))return;
-  sched(c).filter(x=>x.d===dw).forEach(x=>{const m=(x.t||'').match(/(\d{1,2}):(\d{2})/);if(!m||D.sessions.some(z=>z.id===c.id+'_'+k&&isLessonReminderCancelled(z.status)))return;(o[k]??=[]).push({t:m[1].padStart(2,'0')+':'+m[2],e:((x.t||'').match(/-\s*(\d{1,2}):(\d{2})/)||[]).slice(1).map((v,i)=>i?v:v.padStart(2,'0')).join(':'),st:s.name,c:c.name,id:c.id})})})}return o}
+  sched(c).filter(x=>x.d===dw).forEach(x=>{const m=(x.t||'').match(/(\d{1,2}):(\d{2})/);if(!m||D.sessions.some(z=>z.id===c.id+'_'+k&&isLessonReminderCancelled(z.status)))return;(o[k]??=[]).push({t:m[1].padStart(2,'0')+':'+m[2],e:((x.t||'').match(/-\s*(\d{1,2}):(\d{2})/)||[]).slice(1).map((v,i)=>i?v:v.padStart(2,'0')).join(':'),st:s.name,c:c.name,id:c.id,studentId:s.id})})})}return o}
 async function pushSub(){const reg=await navigator.serviceWorker.ready;let s=await reg.pushManager.getSubscription();if(!s){const {pub}=await papi('/config');s=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:u8(pub)})}
  await papi('/subscribe',{sub:s.toJSON(),days:lessons(),tkb:tkbPayload(),birthdays:birthdayPayload(),tz:-new Date().getTimezoneOffset(),name:user.email});return s}
 function birthdayPayload(){return D.students.filter(s=>/^\d{4}-\d{2}-\d{2}$/.test(String(s.dob||''))).map(s=>({id:s.id,name:s.name,dob:s.dob}))}
@@ -639,7 +639,7 @@ const tkbTable=t=>{if(!t)return empty('Chưa có thời khóa biểu chính khó
  const cell=(d,p)=>{const c=t.grid?.[d]?.[p],k=d===td?' class="td"':'';return c&&c.s?`<td${k}><div class="sj" style="--h:${subjHue(c.s)}"><b>${esc(c.s)}</b>${c.t?`<small>${esc(c.t)}</small>`:''}</div></td>`:`<td${k}></td>`};
  let out='',cur='';rows.forEach(([p])=>{if(p[0]!==cur){cur=p[0];out+=`<tr class="ses"><th colspan="${TD.length+1}">${cur==='S'?'Buổi sáng':'Buổi chiều'}</th></tr>`}out+=`<tr><th class="tp1">Tiết ${p[1]}<small>${per[p]?.[0]||''}${per[p]?.[1]?'–'+per[p][1]:''}</small></th>${TD.map(d=>cell(d,p)).join('')}</tr>`});
  return `<div class="tkw"><table class="tk"><tr><th></th>${TD.map(d=>`<th${d===td?' class="td"':''}>${DOW[d]}${d===td?'<small>Hôm nay</small>':''}</th>`).join('')}</tr>${out}</table></div>`};
-const tkbPayload=()=>{const o={};D.students.forEach(s=>{const t=latestTkbFor(s.id);if(!t)return;const g={};TD.forEach(d=>{const l=[];PS.forEach(([p])=>{const n=t.grid?.[d]?.[p]?.s;if(n&&l[l.length-1]!==n)l.push(n)});if(l.length)g[d]=l});if(Object.keys(g).length)o[s.name]=g});return o};
+const tkbPayload=()=>{const byName={},ids={};D.students.forEach(s=>{const t=latestTkbFor(s.id);if(!t)return;const g={};TD.forEach(d=>{const l=[];PS.forEach(([p])=>{const n=t.grid?.[d]?.[p]?.s;if(n&&l[l.length-1]!==n)l.push(n)});if(l.length)g[d]=l});if(Object.keys(g).length){byName[s.name]=g;ids[s.name]=s.id}});return {byName,ids}};
 function tkb(){const t=latestTkb(),ex=[1,2,3,4,5,6,0].map(d=>{const l=mine('courses').filter(c=>c.type==='extra').flatMap(c=>sched(c).filter(s=>s.d===d).map(s=>({t:s.t||'',c}))).sort((a,b)=>(a.t||'99').localeCompare(b.t||'99')).map(x=>row(x.c.name,esc(x.t),x.c.teacher?'GV: '+x.c.teacher:'Học thêm')).join('');return l?`<p class="k"><b>${DOW[d]}</b></p>${l}`:''}).join('');
  const im=mine('tkbimgs').sort((a,b)=>(b.date||'').localeCompare(a.date||'')).map((x,i)=>`<div class="r"><div><b>${i?'Bản cũ':'Bản mới nhất'} · áp dụng từ ${fmtD(x.date)}</b>${x.note?`<small>${esc(x.note)}</small>`:''}<div class="th"><img src="${x.img}" data-a="img" alt="Thời khóa biểu" style="width:128px;height:96px"></div></div><div class="am">${btn('del','tkbimgs',x.id,'Xóa')}</div></div>`).join('');
  return card('Thời khóa biểu chính khóa'+(t?' · từ '+fmtD(t.from):''),tkbTable(t)+addb(t?'Tạo TKB mới / sửa TKB':'Tạo thời khóa biểu','tkbedit','')+(t?`<div class="seg"><button data-a="tkbPdf">In / lưu PDF</button><button data-a="tkbWord">Xuất Word (.docx)</button><button data-a="tkbExcel">Xuất Excel (.xlsx)</button></div>`:'')+`<div class="seg"><button data-a="tkbImport">Nhập TKB từ PDF / Word / Excel / ảnh</button></div>`).replace('class="cd"','class="cd hl"')+card('Lịch học thêm trong tuần',ex||empty('Chưa có lịch học thêm.'))+card('Ảnh thời khóa biểu',(im||empty('Chưa có ảnh. Khi nhà trường đổi TKB, chụp ảnh tải lên đây để lưu lại, rồi tạo TKB mới ở trên.'))+addb('Tải ảnh thời khóa biểu mới','tkbadd',''))}
@@ -675,6 +675,7 @@ function render(){const A=$('#app');
  if(boot)return A.innerHTML='<p class="c">Đang tải…</p>';
  if(!user)return A.innerHTML=`<main class="c"><h1>KidTrack</h1><p>Lịch học, học phí và điểm số của các con.</p><button class="p" data-a="login">Đăng nhập bằng Google</button><p class="k">Thiết kế và sở hữu: Hà Việt Hùng</p></main>`;
  if(!sid)return A.innerHTML=spaceLookupError?`<main class="c"><h1>Chưa mở được sổ học viên</h1><p class="k">${esc(spaceLookupError)}</p><button class="p" data-a="retrySpaces">Thử lại</button> <button data-a="out">Đăng xuất</button></main>`:`<main class="c"><h1>Tạo không gian chung</h1><p>Nhập email Google của người cùng quản lý để hai người xem và nhập chung một sổ.</p><button class="p" data-a="setup">Bắt đầu</button> <button data-a="out">Đăng xuất</button></main>`;
+ if(pendingNoticeRoute&&LOADED.students){const r=pendingNoticeRoute;pendingNoticeRoute=null;const valid=D.students.some(x=>x.id===r.student);if(valid){sel=r.student;lastStu=r.student;tab=r.tab;if(r.date)att=r.date}else{sel='all';tab='home'}if(location.search.includes('kt_notice=1'))history.replaceState(null,'',location.pathname+location.hash)}
  const i=D.students.findIndex(s=>s.id===sel),st=D.students[i],home_=sel==='all'||!st;
  document.documentElement.style.setProperty('--c',home_?neu():col(i));document.body.dataset.role=isAdmin()?'admin':'viewer';
   const studentTabs=orderedStudents();

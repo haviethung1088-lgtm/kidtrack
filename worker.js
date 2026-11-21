@@ -2,6 +2,7 @@
    Cloudflare bindings: KV (KV namespace); APP_ORIGIN là biến tùy chọn.
    Secret tùy chọn: VAPID_SUB. Cron Trigger: * * * * * (mỗi phút). */
 const TE = new TextEncoder();
+function noticeUrl(fields) { const q = new URLSearchParams({ kt_notice:"1", ...fields }); return "?" + q.toString(); }
 const B = {
   enc(buf) { let s = ""; for (const x of new Uint8Array(buf)) s += String.fromCharCode(x); return btoa(s).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, ""); },
   dec(str) { str = str.replace(/-/g, "+").replace(/_/g, "/"); while (str.length % 4) str += "="; const s = atob(str), a = new Uint8Array(s.length); for (let i = 0; i < s.length; i++) a[i] = s.charCodeAt(i); return a; }
@@ -88,7 +89,7 @@ async function run(env, now = Date.now()) {
           if (r.sent[j.key]) continue;
           if (r.attempt[j.key] && now - r.attempt[j.key] < 3 * 60000) continue;
           r.attempt[j.key] = now; dirty = true;
-          let status = 0; try { status = await push(env, r.sub, { title: j.title, body: j.body, tag: "lesson-" + j.key, url: "./" }); } catch (_) {}
+          let status = 0; try { status = await push(env, r.sub, { title: j.title, body: j.body, tag: "lesson-" + j.key, url: noticeUrl({ student:l.studentId || "", tab:"lich", date:dk }) }); } catch (_) {}
           if (status === 404 || status === 410) { delete subs[id]; break; }
           if (status >= 200 && status < 300) { r.sent[j.key] = 1; delete r.attempt[j.key]; }
         }
@@ -100,7 +101,8 @@ async function run(env, now = Date.now()) {
     const lt = new Date(now + off), mod = lt.getUTCHours() * 60 + lt.getUTCMinutes(), wd = lt.getUTCDay();
     if (subs[id] && r.tkb && wd <= 4 && mod >= 21 * 60 + 30 && mod < 22 * 60 + 30) {
       const nd = wd + 1, DN = ["", "Thứ 2", "Thứ 3", "Thứ 4", "Thứ 5", "Thứ 6"];
-      for (const [name, g] of Object.entries(r.tkb)) {
+      const plans = r.tkb && r.tkb.byName || r.tkb || {};
+      for (const [name, g] of Object.entries(plans)) {
         const list = g && g[nd];
         if (!Array.isArray(list) || !list.length) continue;
         const key = today + "|TKB|" + String(name).slice(0, 30);
@@ -108,7 +110,7 @@ async function run(env, now = Date.now()) {
         if (r.attempt[key] && now - r.attempt[key] < 3 * 60000) continue;
         r.attempt[key] = now; dirty = true;
         const body = DN[nd] + " học: " + list.slice(0, 10).map(x => String(x).slice(0, 24)).join(", ") + ". Nhớ soạn sách vở và chuẩn bị đồ dùng học tập.";
-        let status = 0; try { status = await push(env, r.sub, { title: "Chuẩn bị cho ngày mai · " + String(name).slice(0, 30), body, tag: "tkb-" + key, url: "./" }); } catch (_) {}
+        let status = 0; try { status = await push(env, r.sub, { title: "Chuẩn bị cho ngày mai · " + String(name).slice(0, 30), body, tag: "tkb-" + key, url: noticeUrl({ student:(r.tkb.ids && r.tkb.ids[name]) || r.tkbIds && r.tkbIds[name] || "", tab:"tkb" }) }); } catch (_) {}
         if (status === 404 || status === 410) { delete subs[id]; break; }
         if (status >= 200 && status < 300) { r.sent[key] = 1; delete r.attempt[key]; }
       }
@@ -121,7 +123,7 @@ async function run(env, now = Date.now()) {
       if (r.attempt[key] && now - r.attempt[key] < 3 * 60000) continue;
       r.attempt[key] = now; dirty = true;
       let status = 0;
-      try { status = await push(env, r.sub, { title:"Sinh nhật học viên ngày mai", body:"Ngày mai là sinh nhật của " + who + ". Đừng quên gửi lời chúc mừng!", tag:"birthday-" + key, url:"./" }); } catch (_) {}
+      try { status = await push(env, r.sub, { title:"Sinh nhật học viên ngày mai", body:"Ngày mai là sinh nhật của " + who + ". Đừng quên gửi lời chúc mừng!", tag:"birthday-" + key, url:noticeUrl({ student:s.id || "", tab:"home" }) }); } catch (_) {}
       if (status === 404 || status === 410) { delete subs[id]; break; }
       if (status >= 200 && status < 300) { r.sent[key] = 1; delete r.attempt[key]; }
     }
@@ -178,13 +180,14 @@ export default {
           }
         }
         const birthdays = Array.isArray(b.birthdays) ? b.birthdays.filter(x => x && /^\d{4}-\d{2}-\d{2}$/.test(String(x.dob || ""))).slice(0,100).map(x => ({ id:String(x.id || "").slice(0,80), name:String(x.name || "Học viên").slice(0,60), dob:String(x.dob) })) : (old && old.birthdays || []);
-        subs[id] = { sub:s, days:b.days, tz:Number(b.tz), name:String(b.name || "").slice(0,80), weatherLoc, tkb:(b.tkb && typeof b.tkb === "object" && !Array.isArray(b.tkb)) ? b.tkb : {}, birthdays, sent:old ? old.sent : {} };
+        const tkb = b.tkb && typeof b.tkb === "object" && !Array.isArray(b.tkb) ? b.tkb : {};
+        subs[id] = { sub:s, days:b.days, tz:Number(b.tz), name:String(b.name || "").slice(0,80), weatherLoc, tkb:tkb.byName || tkb, tkbIds:tkb.ids || old && old.tkbIds || {}, birthdays, sent:old ? old.sent : {} };
         await env.KV.put("subs", JSON.stringify(subs)); return response({ ok:true }, 200, origin);
       }
       if (url.pathname === "/unsubscribe") { if (b.endpoint) delete subs[await sid(b.endpoint)]; await env.KV.put("subs", JSON.stringify(subs)); return response({ ok:true }, 200, origin); }
       if (url.pathname === "/test") {
         const id = await sid(b.endpoint || ""), r = subs[id]; if (!r) return response({ error:"Thiết bị chưa đăng ký" }, 404, origin);
-        const status = await push(env, r.sub, { title:"KidTrack", body:"Thông báo đẩy đã hoạt động.", tag:"test", url:"./" });
+        const status = await push(env, r.sub, { title:"KidTrack", body:"Thông báo đẩy đã hoạt động.", tag:"test", url:noticeUrl({ tab:"home" }) });
         if (status === 404 || status === 410) { delete subs[id]; await env.KV.put("subs", JSON.stringify(subs)); return response({ status, error:"Đăng ký thiết bị đã hết hạn. Hãy bật nhắc lại trên thiết bị." }, 200, origin); }
         return response({ status, error:status < 200 || status >= 300 ? "Dịch vụ thông báo từ chối yêu cầu (HTTP " + status + ")." : undefined }, 200, origin);
       }

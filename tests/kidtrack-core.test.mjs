@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { addTimetablePeriod, isLessonReminderCancelled } from '../kidtrack-core.mjs';
+import { addTimetablePeriod, isLessonReminderCancelled, notificationRouteFromSearch } from '../kidtrack-core.mjs';
 
 test('two adjacent periods of one subject remain two periods', () => {
   const out = [], seen = new Set(), course = { id: 'english', name: 'Anh' };
@@ -30,4 +30,12 @@ test('absence and teacher cancellation suppress lesson reminders only', () => {
   assert.equal(isLessonReminderCancelled('present'), false);
   assert.equal(isLessonReminderCancelled(''), false);
   assert.equal(isLessonReminderCancelled(undefined), false);
+});
+
+test('notification deep links preserve student, destination tab, and valid date', () => {
+  assert.deepEqual(notificationRouteFromSearch('?kt_notice=1&student=mh1&tab=lich&date=2026-11-22'), {
+    student: 'mh1', tab: 'lich', date: '2026-11-22'
+  });
+  assert.equal(notificationRouteFromSearch('?kt_notice=1&tab=invalid&date=nope').tab, 'home');
+  assert.equal(notificationRouteFromSearch('?student=mh1&tab=lich'), null);
 });
