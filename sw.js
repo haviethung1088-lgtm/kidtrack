@@ -1,5 +1,5 @@
 /* KidTrack – Service Worker: offline + Web Push */
-var V = "kidtrack-v62";
+var V = "kidtrack-v63";
 var NOTICE_DB = "kidtrack-notices-v1";
 function openNoticeDB() { return new Promise(function(resolve,reject){ var r=indexedDB.open(NOTICE_DB,1); r.onupgradeneeded=function(){if(!r.result.objectStoreNames.contains("items"))r.result.createObjectStore("items",{keyPath:"id"});}; r.onsuccess=function(){resolve(r.result);}; r.onerror=function(){reject(r.error);}; }); }
 function updatePushBadge() { return openNoticeDB().then(function(db){return new Promise(function(resolve,reject){var r=db.transaction("items","readonly").objectStore("items").getAll();r.onsuccess=function(){var count=(r.result||[]).filter(function(n){return !n.read;}).length;try{if(count&&self.navigator&&self.navigator.setAppBadge)Promise.resolve(self.navigator.setAppBadge(count)).then(resolve,resolve);else if(!count&&self.navigator&&self.navigator.clearAppBadge)Promise.resolve(self.navigator.clearAppBadge()).then(resolve,resolve);else resolve();}catch(e){resolve();}};r.onerror=function(){reject(r.error);};});}); }function storePushNotice(n) { return openNoticeDB().then(function(db){return new Promise(function(resolve,reject){var r=db.transaction("items","readwrite").objectStore("items").put(n);r.onsuccess=function(){resolve();};r.onerror=function(){reject(r.error);};});}); }

@@ -2,18 +2,19 @@
 
 ## Cách tiếp tục ở tài khoản Codex khác
 
-1. Mở thư mục `C:\Users\PC-IT\Downloads\Kidtrack\kidtrack-main` làm workspace. Đây là **bản nguồn chuẩn đang làm**.
+1. Mở thư mục `kidtrack-main` được giải nén từ gói ZIP mới nhất làm workspace. Đây là **bản nguồn chuẩn đang làm**; không dùng các bản cũ ở thư mục lưu trữ.
 2. Đọc file này và `kidtrack-main\README.txt` trước khi sửa.
-3. Kiểm tra `version.json` và `APP_VER` trong `index.html` trước khi bắt đầu. Bản hiện tại là **v1.10.50**, cập nhật lúc **17/11/2026 13:53 (giờ Việt Nam)**.
+3. Kiểm tra `version.json` và `APP_VER` trong `index.html` trước khi bắt đầu. Tại thời điểm bàn giao này, bản mới nhất là **v1.10.57**; thông tin phiên bản trong hai file này là nguồn chính xác.
 4. Sửa trực tiếp trong `kidtrack-main`. Sau mỗi thay đổi phát hành, đồng bộ `APP_VER` + `APP_BUILD` trong `index.html`, `version` + `build` trong `version.json`, đồng thời tăng cache name `kidtrack-vNN` trong `sw.js`.
-5. Tạo gói ZIP mới để anh tải lên GitHub; không ghi đè các bản ZIP cũ. Gói mới nhất hiện có: `C:\Users\PC-IT\Downloads\Kidtrack\KidTrack-v1.10.50-GitHub.zip`.
+5. Tạo gói ZIP mới để anh tải lên GitHub; không ghi đè các bản ZIP cũ. Dùng tên có số phiên bản mới, ví dụ `KidTrack-v1.10.57-GitHub.zip`.
 
 ## Chọn đúng thư mục nguồn
 
-Trong `C:\Users\PC-IT\Downloads\Kidtrack` còn có `index.html`, `sw.js`, `version.json` ở thư mục gốc và thư mục `incoming-home-v1.10.45`. Đây là các bản cũ/lưu trữ. **Không lấy chúng làm nguồn phát hành.** Không xóa hoặc sửa các bản lưu trữ nếu anh chưa yêu cầu.
+Bản ZIP mới nhất là nguồn chuẩn; các thư mục/bản cũ khác trong Downloads chỉ là lưu trữ. **Không lấy chúng làm nguồn phát hành.** Không xóa hoặc sửa bản lưu trữ nếu anh chưa yêu cầu.
 
 ## Tình trạng bản hiện tại
 
+- **v1.10.57:** thêm lựa chọn đóng trước cả khóa để theo dõi số buổi/tổng buổi, không cộng tiền phát sinh; giữ lựa chọn tính theo buổi với số còn nợ được trừ sau thanh toán; lịch sử khoản đóng vẫn lưu trong payments.
 - **v1.10.50:** thêm nút chuông cạnh icon cài đặt; danh sách thông báo trong app; lưu thông báo phiên bản mới và thông báo đẩy trong IndexedDB; đánh dấu đã đọc; giữ nhắc cập nhật đến khi đã cài phiên bản đó; đồng bộ số chưa đọc lên app badge bằng Web Badging API khi thiết bị hỗ trợ.
 - **v1.10.48:** cải tiến giao diện mobile/desktop; menu desktop mở cố định kèm nhãn; tăng phân cấp chữ và độ rõ của thẻ/bảng; làm nổi học viên đang xem.
 - Trước đó đã có các phần đồng bộ dữ liệu, sao lưu/khôi phục, thời khóa biểu, điểm, thu học phí, xuất/nhập và giao diện theo yêu cầu của anh.
@@ -57,4 +58,4 @@ Trong `C:\Users\PC-IT\Downloads\Kidtrack` còn có `index.html`, `sw.js`, `versi
 
 ## Lời nhắn có thể gửi cho Codex mới
 
-> Tiếp tục dự án KidTrack theo `CODEX-HANDOFF.md`. Nguồn chuẩn ở `C:\Users\PC-IT\Downloads\Kidtrack\kidtrack-main`, bản hiện tại v1.10.50. Giữ nguyên các yêu cầu TKB không gộp tiết, giao diện mobile-first nhưng tốt trên desktop, nhận diện học viên rõ, và luồng sao lưu/thông báo. Hãy đọc code hiện tại trước khi sửa, làm trực tiếp trong thư mục nguồn chuẩn, đồng bộ version + service worker cache và tạo ZIP phát hành mới khi hoàn tất. Không sửa bản lưu trữ hoặc push GitHub nếu chưa được yêu cầu.
+> Tiếp tục dự án KidTrack theo `CODEX-HANDOFF.md`. Nguồn chuẩn là thư mục `kidtrack-main` giải nén từ ZIP mới nhất; xem `version.json` và `APP_VER` để biết phiên bản hiện hành. Giữ nguyên các yêu cầu TKB không gộp tiết, giao diện mobile-first nhưng tốt trên desktop, nhận diện học viên rõ, và luồng sao lưu/thông báo. Hãy đọc code hiện tại trước khi sửa, làm trực tiếp trong thư mục nguồn chuẩn, đồng bộ version + service worker cache và tạo ZIP phát hành mới khi hoàn tất. Không sửa bản lưu trữ hoặc push GitHub nếu chưa được yêu cầu.
